@@ -1,7 +1,6 @@
 package com.krist.service;
 
 import java.util.Date;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.krist.util.JwtUtil;
 import io.jsonwebtoken.Claims;
@@ -9,8 +8,11 @@ import io.jsonwebtoken.JwtException;
 
 @Service
 public class JwtService {
-    @Autowired
-    private JwtUtil jwtUtil;
+    final private JwtUtil jwtUtil;
+
+    public JwtService(JwtUtil jwtUtil) {
+        this.jwtUtil = jwtUtil;
+    }
 
     /**
      * Generates an access token for the specified user ID.
@@ -39,5 +41,16 @@ public class JwtService {
         }
 
         return true;
+    }
+
+    /**
+     * Retrieves the user ID from the provided JWT token.
+     *
+     * @param token the JWT token from which the user ID is extracted
+     * @return the user ID parsed from the token as a Long
+     * @throws JwtException if an issue occurs during the parsing of the token
+     */
+    public Long getUserIdFromJwt(String token) throws JwtException {
+        return Long.parseLong(jwtUtil.parseToken(token).getSubject());
     }
 }

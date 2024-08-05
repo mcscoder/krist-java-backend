@@ -1,7 +1,6 @@
 package com.krist.service;
 
 import javax.naming.AuthenticationException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -14,14 +13,17 @@ import com.krist.repository.user.UserRepository;
 
 @Service
 public class AuthenticationService {
-    @Autowired
-    private UserRepository userRepository;
+    final private UserRepository userRepository;
+    final private PasswordEncoder passwordEncoder;
+    final private JwtService jwtService;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private JwtService jwtService;
+    public AuthenticationService(UserRepository userRepository, PasswordEncoder passwordEncoder,
+            JwtService jwtService) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
+    }
 
     public void register(RegisterDto registerDto) throws EmailAlreadyExistsException {
         if (userRepository.existsByEmail(registerDto.email())) {
