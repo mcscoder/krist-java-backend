@@ -17,6 +17,7 @@ import com.krist.repository.user.UserRepository;
 import com.krist.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -51,6 +52,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         } catch (Exception e) {
             logger.error("Could not set user authentication in security context", e);
+            response.addHeader("unauthorized", "");
         }
 
         filterChain.doFilter(request, response);
@@ -58,17 +60,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private String getJwtFromRequest(HttpServletRequest request)
             throws InvalidAttributeValueException, NoSuchElementException {
-        String authHeader = request.getHeader("Authorization");
-
-        if (authHeader == null) {
-            throw new NoSuchElementException("Authorization header is missing");
+        if (request.getCookies() == null) {
+            throw new NoSuchElementException("No cookies found in the request");
         }
 
-        if (!authHeader.startsWith("Bearer ")) {
-            throw new InvalidAttributeValueException(
-                    "Authorization header does not start with 'Bearer '");
+        for (Cookie cookie : request.getCookies()) {
+            System.out.println(cookie.getName());
+            if ("jwt".equals(cookie.getName())) {
+                return cookie.getValue();
+            }
         }
 
-        return authHeader.substring(7);
+        throw new NoSuchElementException("JWT cookie is missing");
     }
 }

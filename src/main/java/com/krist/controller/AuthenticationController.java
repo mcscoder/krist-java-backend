@@ -16,6 +16,8 @@ import com.krist.dto.user.RegisterDto;
 import com.krist.enums.HttpStatusCode;
 import com.krist.exception.EmailAlreadyExistsException;
 import com.krist.service.AuthenticationService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("/auth")
@@ -47,11 +49,17 @@ public class AuthenticationController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Object> login(@RequestBody LoginDto loginDto) {
+    public ResponseEntity<MessageDto> login(@RequestBody LoginDto loginDto,
+            HttpServletResponse response) {
         try {
             TokenDto tokenDto = authenticationService.login(loginDto);
             logger.info("User login successfully with email: {}", loginDto.email());
-            return ResponseEntity.ok().body(tokenDto);
+
+            Cookie cookie = new Cookie("jwt", tokenDto.token());
+            cookie.setPath("/");
+            response.addCookie(cookie);
+
+            return ResponseEntity.ok().body(new MessageDto("Log in success"));
         } catch (UsernameNotFoundException e) {
             logger.error("Username not found for email: {}", loginDto.email(), e);
             return ResponseEntity.status(HttpStatusCode.NOT_FOUND.getCode())
