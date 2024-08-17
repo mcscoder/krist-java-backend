@@ -1,7 +1,9 @@
 package com.krist.entity.user;
 
 import java.util.Date;
+
 import com.krist.entity.common.BaseEntity;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

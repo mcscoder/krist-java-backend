@@ -3,6 +3,7 @@ package com.krist.entity.order;
 import com.krist.entity.common.BaseEntity;
 import com.krist.entity.user.Shipping;
 import com.krist.entity.user.User;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

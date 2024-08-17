@@ -2,6 +2,7 @@ package com.krist.entity.cart;
 
 import com.krist.entity.common.BaseEntity;
 import com.krist.entity.user.User;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;

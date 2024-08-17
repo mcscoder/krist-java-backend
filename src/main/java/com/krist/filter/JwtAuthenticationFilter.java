@@ -3,19 +3,23 @@ package com.krist.filter;
 import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
+
 import javax.naming.directory.InvalidAttributeValueException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.stereotype.Component;
+
 import com.krist.entity.user.User;
-import com.krist.enums.HttpStatusCode;
 import com.krist.repository.user.UserRepository;
 import com.krist.service.JwtService;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -57,7 +61,7 @@ public class JwtAuthenticationFilter extends AuthenticationFilter {
             SecurityContextHolder.setContext(context);
         } catch (Exception e) {
             logger.error("Could not set user authentication in security context", e);
-            response.setStatus(HttpStatusCode.UNAUTHORIZED.getCode());
+            response.setStatus(HttpStatus.UNAUTHORIZED.value());
 
             return;
         }

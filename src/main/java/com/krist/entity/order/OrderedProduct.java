@@ -2,6 +2,7 @@ package com.krist.entity.order;
 
 import com.krist.entity.common.BaseEntity;
 import com.krist.entity.product.Product;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
