@@ -1,4 +1,4 @@
-package com.krist.config;
+package com.krist.filter;
 
 import java.io.IOException;
 import java.util.List;
@@ -10,9 +10,10 @@ import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
 import com.krist.entity.user.User;
+import com.krist.enums.HttpStatusCode;
 import com.krist.repository.user.UserRepository;
 import com.krist.service.JwtService;
 import jakarta.servlet.FilterChain;
@@ -22,12 +23,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 @Component
-public class JwtAuthenticationFilter extends OncePerRequestFilter {
+public class JwtAuthenticationFilter extends AuthenticationFilter {
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
-    public JwtAuthenticationFilter(UserRepository userRepository, JwtService jwtService) {
+    public JwtAuthenticationFilter(RequestMatcher authenticationRequestMatcher,
+            UserRepository userRepository, JwtService jwtService) {
+        super(authenticationRequestMatcher);
         this.userRepository = userRepository;
         this.jwtService = jwtService;
     }
@@ -40,19 +43,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         try {
             String jwt = getJwtFromRequest(request);
+
             Long userId = jwtService.getUserIdFromJwt(jwt);
+
             User user = userRepository.findById(userId).get();
 
             UsernamePasswordAuthenticationToken authReq =
                     new UsernamePasswordAuthenticationToken(user, null, List.of());
 
             SecurityContext context = SecurityContextHolder.createEmptyContext();
+
             context.setAuthentication(authReq);
             SecurityContextHolder.setContext(context);
-
         } catch (Exception e) {
             logger.error("Could not set user authentication in security context", e);
-            response.addHeader("unauthorized", "");
+            response.setStatus(HttpStatusCode.UNAUTHORIZED.getCode());
+
+            return;
         }
 
         filterChain.doFilter(request, response);
@@ -65,7 +72,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         for (Cookie cookie : request.getCookies()) {
-            System.out.println(cookie.getName());
             if ("jwt".equals(cookie.getName())) {
                 return cookie.getValue();
             }

@@ -21,8 +21,7 @@ public class JwtService {
      * @return the generated access token as a string
      */
     public String generateAccessToken(Long userId) {
-        System.out.println();
-        String jwt = jwtUtil.createToken(null, userId.toString());
+        String jwt = jwtUtil.createAccessToken(null, userId.toString());
         return jwt;
     }
 

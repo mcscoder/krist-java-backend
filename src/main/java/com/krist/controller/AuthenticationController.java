@@ -1,30 +1,27 @@
 package com.krist.controller;
 
 import javax.naming.AuthenticationException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
 import com.krist.dto.common.MessageDto;
 import com.krist.dto.common.TokenDto;
 import com.krist.dto.user.LoginDto;
+import com.krist.dto.user.PasswordDto;
 import com.krist.dto.user.RegisterDto;
-import com.krist.enums.HttpStatusCode;
-import com.krist.exception.EmailAlreadyExistsException;
 import com.krist.service.AuthenticationService;
+
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("/auth")
 public class AuthenticationController {
-
-    private static final Logger logger = LoggerFactory.getLogger(AuthenticationController.class);
-
     final private AuthenticationService authenticationService;
 
     public AuthenticationController(AuthenticationService authenticationService) {
@@ -33,46 +30,43 @@ public class AuthenticationController {
 
     @PostMapping("/register")
     public ResponseEntity<MessageDto> register(@RequestBody RegisterDto registerDto) {
-        logger.info("Register request received for email: {}", registerDto.email());
-        try {
-            authenticationService.register(registerDto);
-            logger.info("User registered successfully with email: {}", registerDto.email());
-            return ResponseEntity.ok(new MessageDto("Register success"));
-        } catch (EmailAlreadyExistsException e) {
-            logger.error("Email already exists: {}", registerDto.email(), e);
-            return ResponseEntity.status(HttpStatusCode.CONFLICT.getCode())
-                    .body(new MessageDto(e.getMessage()));
-        } catch (Exception e) {
-            logger.error("An unexpected error occurred during registration", e);
-            return ResponseEntity.internalServerError().build();
-        }
+        authenticationService.register(registerDto);
+
+        return ResponseEntity.ok(new MessageDto("Register success"));
     }
 
     @PostMapping("/login")
     public ResponseEntity<MessageDto> login(@RequestBody LoginDto loginDto,
-            HttpServletResponse response) {
-        try {
-            TokenDto tokenDto = authenticationService.login(loginDto);
-            logger.info("User login successfully with email: {}", loginDto.email());
+            HttpServletResponse response) throws AuthenticationException {
+        TokenDto tokenDto = authenticationService.login(loginDto);
+        Cookie cookie = new Cookie("jwt", tokenDto.token());
 
-            Cookie cookie = new Cookie("jwt", tokenDto.token());
-            cookie.setPath("/");
-            response.addCookie(cookie);
+        cookie.setPath("/");
+        response.addCookie(cookie);
 
-            return ResponseEntity.ok().body(new MessageDto("Log in success"));
-        } catch (UsernameNotFoundException e) {
-            logger.error("Username not found for email: {}", loginDto.email(), e);
-            return ResponseEntity.status(HttpStatusCode.NOT_FOUND.getCode())
-                    .body(new MessageDto(e.getMessage()));
-        } catch (AuthenticationException e) {
-            logger.error("Authentication failed for email: {}", loginDto.email(), e);
-            return ResponseEntity.status(HttpStatusCode.BAD_REQUEST.getCode())
-                    .body(new MessageDto(e.getMessage()));
-        } catch (Exception e) {
-            logger.error("An unexpected error occurred during login for email: {}",
-                    loginDto.email(), e);
-            return ResponseEntity.status(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode())
-                    .body(new MessageDto("An unexpected error occurred"));
-        }
+        return ResponseEntity.ok().body(new MessageDto("Log in success"));
+    }
+
+    @PostMapping("/forgot-password/{email}")
+    public ResponseEntity<MessageDto> forgotPassword(@PathVariable String email) {
+        authenticationService.forgotPassword(email);
+
+        return ResponseEntity.ok().body(new MessageDto("OTP code has been sent to your email"));
+    }
+
+    @PostMapping("/otp/{email}/{otp}")
+    public ResponseEntity<Object> otpAuthentication(@PathVariable String email,
+            @PathVariable Integer otp) {
+        TokenDto token = authenticationService.otpAuthentication(email, otp);
+
+        return ResponseEntity.ok().body(token);
+    }
+
+    @PostMapping("/reset-password/{token}")
+    public ResponseEntity<Object> resetPassword(@PathVariable String token,
+            @RequestBody PasswordDto passwordDto) {
+        authenticationService.resetPassword(token, passwordDto.password());
+
+        return ResponseEntity.ok().body(new MessageDto("Password has been changed"));
     }
 }

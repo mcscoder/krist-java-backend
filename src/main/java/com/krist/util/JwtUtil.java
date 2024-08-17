@@ -27,7 +27,7 @@ public class JwtUtil {
         return key;
     }
 
-    public String createToken(Map<String, Object> extraClaims, String subject) {
+    public String createAccessToken(Map<String, Object> extraClaims, String subject) {
         // Official Docs Reference:
         // https://github.com/jwtk/jjwt?tab=readme-ov-file#creating-a-jws
         // Example:
@@ -39,9 +39,15 @@ public class JwtUtil {
         return jwt;
     }
 
-    public Claims parseToken(String token) throws JwtException {
+    public Claims parseToken(String token) {
         // Reference: https://github.com/jwtk/jjwt?tab=readme-ov-file#reading-a-jws
         Jws<Claims> jws = Jwts.parser().verifyWith(getSignInKey()).build().parseSignedClaims(token);
         return jws.getPayload();
+    }
+
+    public String createPasswordResetToken(Long userId, Integer otp) {
+        String jwt = Jwts.builder().claim("otp", otp).subject(userId.toString())
+                .signWith(getSignInKey(), Jwts.SIG.HS256).compact();
+        return jwt;
     }
 }
