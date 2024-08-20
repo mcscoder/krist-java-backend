@@ -1,5 +1,7 @@
 package com.krist.entity.product;
 
+import java.util.List;
+
 import com.krist.entity.common.BaseEntity;
 
 import jakarta.persistence.Column;
@@ -7,6 +9,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -24,4 +27,11 @@ public class CategoryGroup extends BaseEntity {
 
     @Column(nullable = false)
     private String name;
+
+    @OneToMany(mappedBy = "categoryGroup")
+    private List<Category> categories;
+
+    public CategoryGroup(String name) {
+        this.name = name;
+    }
 }

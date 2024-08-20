@@ -14,6 +14,7 @@ import com.krist.entity.user.PasswordResetOtp;
 import com.krist.entity.user.User;
 import com.krist.exception.custom.BadRequestException;
 import com.krist.exception.custom.ConflictException;
+import com.krist.exception.custom.NotFoundException;
 
 @Service
 public class AuthenticationService {
@@ -70,7 +71,7 @@ public class AuthenticationService {
 
             // Update the existing entry
             passwordResetOtpService.updatePasswordResetOtp(existingPasswordResetOtp, otp);
-        } catch (NoSuchElementException e) {
+        } catch (NotFoundException e) {
             // Create a new entry
             PasswordResetOtp newPasswordResetOtp = new PasswordResetOtp(otp, expiryDate, user);
 

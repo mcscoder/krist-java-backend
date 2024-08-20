@@ -33,8 +33,9 @@ public class JwtAuthenticationFilter extends AuthenticationFilter {
     private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
     public JwtAuthenticationFilter(RequestMatcher authenticationRequestMatcher,
-            UserRepository userRepository, JwtService jwtService) {
-        super(authenticationRequestMatcher);
+            RequestMatcher publicRequestMatcher, UserRepository userRepository,
+            JwtService jwtService) {
+        super(authenticationRequestMatcher, publicRequestMatcher);
         this.userRepository = userRepository;
         this.jwtService = jwtService;
     }

@@ -18,4 +18,9 @@ public class ApplicationConfiguration {
     RequestMatcher authenticationRequestMatcher() {
         return new AntPathRequestMatcher("/auth/**");
     }
+
+    @Bean
+    RequestMatcher publicRequestMatcher() {
+        return new AntPathRequestMatcher("/public/**");
+    }
 }

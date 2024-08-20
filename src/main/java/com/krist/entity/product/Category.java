@@ -1,5 +1,6 @@
 package com.krist.entity.product;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.krist.entity.common.BaseEntity;
 
 import jakarta.persistence.Column;
@@ -29,5 +30,11 @@ public class Category extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "category_group_id")
+    @JsonIgnore
     private CategoryGroup categoryGroup;
+
+    public Category(String name, CategoryGroup categoryGroup) {
+        this.name = name;
+        this.categoryGroup = categoryGroup;
+    }
 }

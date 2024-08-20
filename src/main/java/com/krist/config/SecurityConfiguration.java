@@ -19,11 +19,13 @@ public class SecurityConfiguration {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final RequestMatcher authenticationRequestMatcher;
+    private final RequestMatcher publicRequestMatcher;
 
     public SecurityConfiguration(JwtAuthenticationFilter jwtAuthenticationFilter,
-            RequestMatcher authenticationRequestMatcher) {
+            RequestMatcher authenticationRequestMatcher, RequestMatcher publicRequestMatcher) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.authenticationRequestMatcher = authenticationRequestMatcher;
+        this.publicRequestMatcher = publicRequestMatcher;
     }
 
     @Bean
@@ -32,7 +34,8 @@ public class SecurityConfiguration {
 
         // Define which requests should be permitted without authentication
         http.authorizeHttpRequests(
-                auth -> auth.requestMatchers(authenticationRequestMatcher).permitAll().anyRequest().authenticated());
+                auth -> auth.requestMatchers(authenticationRequestMatcher, publicRequestMatcher)
+                        .permitAll().anyRequest().authenticated());
 
         // Add the JWT authentication filter
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
