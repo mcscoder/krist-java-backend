@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.krist.dto.product.PostCategoryGroupRequestDto;
+import com.krist.entity.common.Image;
 import com.krist.entity.product.CategoryGroup;
 import com.krist.exception.custom.NotFoundException;
 import com.krist.repository.product.CategoryGroupRepository;
@@ -19,7 +20,8 @@ public class CategoryGroupService {
     }
 
     public CategoryGroup postCategoryGroup(PostCategoryGroupRequestDto dto) {
-        CategoryGroup categoryGroup = new CategoryGroup(dto.name());
+        Image image = new Image(dto.imageId());
+        CategoryGroup categoryGroup = new CategoryGroup(dto.name(), image);
 
         return categoryGroupRepository.save(categoryGroup);
     }

@@ -23,7 +23,7 @@ import com.krist.repository.common.ImageRepository;
 @RequestMapping("/public/upload")
 public class UploadController {
 
-    private static final String UPLOAD_DIR = "src/main/resources/static/public/images/";
+    private static final String UPLOAD_DIR = "uploads/";
 
     private final ImageRepository imageRepository;
 

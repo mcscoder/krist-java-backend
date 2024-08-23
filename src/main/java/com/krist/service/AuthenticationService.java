@@ -1,7 +1,6 @@
 package com.krist.service;
 
 import java.util.Date;
-import java.util.NoSuchElementException;
 import java.util.Random;
 
 import org.springframework.security.crypto.password.PasswordEncoder;

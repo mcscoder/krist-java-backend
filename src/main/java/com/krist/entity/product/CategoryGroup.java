@@ -38,7 +38,8 @@ public class CategoryGroup extends BaseEntity {
     @JoinColumn(name = "image_id")
     private Image image;
 
-    public CategoryGroup(String name) {
+    public CategoryGroup(String name, Image image) {
         this.name = name;
+        this.image = image;
     }
 }
