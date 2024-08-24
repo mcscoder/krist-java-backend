@@ -24,4 +24,12 @@ public class Attribute extends BaseEntity {
 
     @Column(nullable = false)
     private String name;
+
+    public Attribute(Long id) {
+        this.id = id;
+    }
+
+    public Attribute(String name) {
+        this.name = name;
+    }
 }

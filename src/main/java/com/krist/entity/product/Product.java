@@ -48,4 +48,17 @@ public class Product extends BaseEntity {
     @JoinTable(name = "product_category", joinColumns = @JoinColumn(name = "product_id"),
             inverseJoinColumns = @JoinColumn(name = "category_id"))
     private Set<Category> categories;
+
+    public Product(Long id) {
+        this.id = id;
+    }
+
+    public Product(String name, String title, String description, Set<Image> images,
+            Set<Category> categories) {
+        this.name = name;
+        this.title = title;
+        this.description = description;
+        this.images = images;
+        this.categories = categories;
+    }
 }

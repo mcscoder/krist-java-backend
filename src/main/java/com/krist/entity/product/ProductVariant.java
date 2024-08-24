@@ -43,4 +43,12 @@ public class ProductVariant extends BaseEntity {
     @JoinTable(name = "variant_attribute", joinColumns = @JoinColumn(name = "product_variant_id"),
             inverseJoinColumns = @JoinColumn(name = "attribute_value_id"))
     private Set<AttributeValue> attributeValues;
+
+    public ProductVariant(Double price, Integer quantity, Product product,
+            Set<AttributeValue> attributeValues) {
+        this.price = price;
+        this.quantity = quantity;
+        this.product = product;
+        this.attributeValues = attributeValues;
+    }
 }

@@ -33,6 +33,10 @@ public class Category extends BaseEntity {
     @JsonIgnore
     private CategoryGroup categoryGroup;
 
+    public Category(Long id) {
+        this.id = id;
+    }
+
     public Category(String name, CategoryGroup categoryGroup) {
         this.name = name;
         this.categoryGroup = categoryGroup;

@@ -31,4 +31,13 @@ public class AttributeValue extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "attribute_id")
     private Attribute attribute;
+
+    public AttributeValue(Long id) {
+        this.id = id;
+    }
+
+    public AttributeValue(String name, Attribute attribute) {
+        this.name = name;
+        this.attribute = attribute;
+    }
 }
