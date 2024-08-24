@@ -33,7 +33,7 @@ public class CategoryGroupService {
             categoryGroups.add(postCategoryGroup(dto));
         }
 
-        return categoryGroupRepository.saveAll(categoryGroups);
+        return categoryGroups;
     }
 
     public CategoryGroup getCategoryGroup(Long id) {
