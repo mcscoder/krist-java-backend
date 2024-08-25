@@ -16,14 +16,6 @@
 }
 ```
 
-### Response
-
-```json
-{
-  "token": "..."
-}
-```
-
 ## 1.2. Register
 
 - Path: `/auth/register`
@@ -40,55 +32,20 @@
 }
 ```
 
-### Response
-
-```json
-{
-  "message": "..."
-}
-```
-
 ## 1.3. Forgot password
 
-- Path: `/auth/forgot`
+- Path: `/auth/forgot/{email}`
 - Method: `POST`
-
-### Request body
-
-```json
-{
-  "email": "..."
-}
-```
-
-### Response
-
-```json
-{
-  "message": "..."
-}
-```
 
 ## 1.4. OTP authentication
 
-- Path: `/auth/otp`
+- Path: `/auth/otp/{email}/{otp}`
 - Method: `POST`
 
-### Request body
+## 1.5. Reset password'
 
-```json
-{
-  "otp": "..."
-}
-```
-
-### Response
-
-```json
-{
-  "message": "..."
-}
-```
+- Path: `/reset-password/{token}`
+- Method: `POST`
 
 # 2. User profile
 
@@ -162,4 +119,117 @@
 
 - User settings
 
+# 3. Product
+
+## 3.1. Attribute
+
+- Path:
+
+  - `/public/attribute`
+  - `/public/attributes`
+
+- Method: `POST` `GET`
+
+- `POST` body:
+
+```json
+{
+  "name": "..."
+}
+```
+
+## 3.2. Attribute value
+
+- Path:
+
+  - `/public/attribute-value`
+  - `/public/attribute-values`
+
+- Method: `POST` `GET`
+
+- `POST` body:
+
+```json
+{
+  "name": "...",
+  "attributeId": 0
+}
+```
+
+## 3.3. Category group
+
+- Path:
+
+  - `/public/category-group`
+  - `/public/category-groups`
+
+- Method: `POST` `GET`
+
+- `POST` body:
+
+```json
+{
+  "name": "...",
+  "imageId": 0
+}
+```
+
+## 3.4. Category
+
+- Path:
+
+  - `/public/category`
+  - `/public/categories`
+
+- Method: `POST` `GET`
+
+- `POST` body:
+
+```json
+{
+  "name": "...",
+  "categoryGroupId": 0
+}
+```
+
+## 3.5. Product
+
+- Path:
+
+  - `/public/product`
+  - `/public/products`
+
+- Method: `POST` `GET`
+
+- `POST` body:
+
+```json
+{
+  "title": "...",
+  "name": "...",
+  "description": "...",
+  "imageIds": [0, 1],
+  "categoryIds": [0, 1]
+}
+```
+
+## 3.6. Product variant
+
+- Path:
+
+  - `/public/product-variant`
+  - `/public/product-variants`
+
+- Method: `POST` `GET`
+
+- `POST` body:
+
+```json
+{
+  "price": 0,
+  "quantity": 0,
+  "productId": 0,
+  "attributeValueIds": [0, 1]
+}
+```
 
