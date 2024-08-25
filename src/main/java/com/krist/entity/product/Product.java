@@ -37,6 +37,9 @@ public class Product extends BaseEntity {
     @Column(nullable = false)
     private String description;
 
+    @Column(nullable = false)
+    private Integer sold;
+
     // 1. Images
     @ManyToMany
     @JoinTable(name = "product_image", joinColumns = @JoinColumn(name = "product_id"),
