@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.krist.dto.product.PostProductRequestDto;
 import com.krist.entity.product.Product;
 import com.krist.service.product.ProductService;
-
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/public")
@@ -51,7 +51,13 @@ public class ProductController {
     }
 
     @GetMapping("/products/category-group/{categoryGroupId}")
-    public ResponseEntity<List<Product>> getProductsByCategoryGroup(@PathVariable Long categoryGroupId) {
+    public ResponseEntity<List<Product>> getProductsByCategoryGroup(
+            @PathVariable Long categoryGroupId) {
         return ResponseEntity.ok(productService.getProductsByCategoryGroup(categoryGroupId));
+    }
+
+    @GetMapping("/products/category/{categoryId}")
+    public ResponseEntity<List<Product>> getProductsByCategory(@PathVariable Long categoryId) {
+        return ResponseEntity.ok().body(productService.getProductsByCategory(categoryId));
     }
 }

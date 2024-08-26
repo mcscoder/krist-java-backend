@@ -36,8 +36,8 @@ public class ProductService {
             categories.add(new Category(categoryId));
         }
 
-        Product product =
-                new Product(dto.name(), dto.title(), dto.description(), 0, images, categories, null);
+        Product product = new Product(dto.name(), dto.title(), dto.description(), 0, images,
+                categories, null);
 
         return productRepository.save(product);
     }
@@ -68,5 +68,9 @@ public class ProductService {
 
     public List<Product> getProductsByCategoryGroup(Long categoryGroupId) {
         return productRepository.findProductsByCategoryGroupId(categoryGroupId);
+    }
+
+    public List<Product> getProductsByCategory(Long categoryId) {
+        return productRepository.findProductsByCategoryId(categoryId);
     }
 }
