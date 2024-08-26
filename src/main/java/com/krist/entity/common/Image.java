@@ -22,4 +22,12 @@ public class Image extends BaseEntity {
 
     @Column(nullable = false)
     private String src;
+
+    public Image(Long id) {
+        this.id = id;
+    }
+
+    public Image(String src) {
+        this.src = src;
+    }
 }

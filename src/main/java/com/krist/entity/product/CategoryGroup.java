@@ -1,6 +1,9 @@
 package com.krist.entity.product;
 
+import java.util.List;
+
 import com.krist.entity.common.BaseEntity;
+import com.krist.entity.common.Image;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -8,7 +11,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -19,7 +23,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @Entity
-public class AttributeValue extends BaseEntity {
+public class CategoryGroup extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -27,17 +31,15 @@ public class AttributeValue extends BaseEntity {
     @Column(nullable = false)
     private String name;
 
-    // 1. Attribute
-    @ManyToOne
-    @JoinColumn(name = "attribute_id")
-    private Attribute attribute;
+    @OneToMany(mappedBy = "categoryGroup")
+    private List<Category> categories;
 
-    public AttributeValue(Long id) {
-        this.id = id;
-    }
+    @OneToOne
+    @JoinColumn(name = "image_id")
+    private Image image;
 
-    public AttributeValue(String name, Attribute attribute) {
+    public CategoryGroup(String name, Image image) {
         this.name = name;
-        this.attribute = attribute;
+        this.image = image;
     }
 }

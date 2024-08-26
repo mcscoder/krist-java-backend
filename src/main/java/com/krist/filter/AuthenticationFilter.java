@@ -8,14 +8,19 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 
 public abstract class AuthenticationFilter extends OncePerRequestFilter {
-    private RequestMatcher authenticationRequestMatcher;
 
-    public AuthenticationFilter(RequestMatcher authenticationRequestMatcher) {
+    private final RequestMatcher authenticationRequestMatcher;
+    private final RequestMatcher publicRequestMatcher;
+
+    public AuthenticationFilter(RequestMatcher authenticationRequestMatcher,
+            RequestMatcher publicRequestMatcher) {
         this.authenticationRequestMatcher = authenticationRequestMatcher;
+        this.publicRequestMatcher = publicRequestMatcher;
     }
 
     @Override
     protected boolean shouldNotFilter(@NonNull HttpServletRequest request) throws ServletException {
-        return authenticationRequestMatcher.matches(request);
+        return authenticationRequestMatcher.matches(request)
+                || publicRequestMatcher.matches(request);
     }
 }

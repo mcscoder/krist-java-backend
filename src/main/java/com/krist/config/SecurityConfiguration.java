@@ -9,6 +9,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.krist.filter.JwtAuthenticationFilter;
@@ -19,11 +20,13 @@ public class SecurityConfiguration {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final RequestMatcher authenticationRequestMatcher;
+    private final RequestMatcher publicRequestMatcher;
 
     public SecurityConfiguration(JwtAuthenticationFilter jwtAuthenticationFilter,
-            RequestMatcher authenticationRequestMatcher) {
+            RequestMatcher authenticationRequestMatcher, RequestMatcher publicRequestMatcher) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.authenticationRequestMatcher = authenticationRequestMatcher;
+        this.publicRequestMatcher = publicRequestMatcher;
     }
 
     @Bean
@@ -32,7 +35,8 @@ public class SecurityConfiguration {
 
         // Define which requests should be permitted without authentication
         http.authorizeHttpRequests(
-                auth -> auth.requestMatchers(authenticationRequestMatcher).permitAll().anyRequest().authenticated());
+                auth -> auth.requestMatchers(authenticationRequestMatcher, publicRequestMatcher)
+                        .permitAll().anyRequest().authenticated());
 
         // Add the JWT authentication filter
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
@@ -41,12 +45,18 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    WebMvcConfigurer corsConfigurer() {
+    WebMvcConfigurer webMvcConfigurer() {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(@NonNull CorsRegistry registry) {
-                registry.addMapping("/**").allowedOrigins("http://localhost:3000")
+                registry.addMapping("/**").allowedOrigins("http://localhost:3000", "http://localhost:6006")
                         .allowedMethods("*").allowCredentials(true);
+            }
+
+            @Override
+            public void addResourceHandlers(@NonNull ResourceHandlerRegistry registry) {
+                registry.addResourceHandler("/public/images/**")
+                        .addResourceLocations("file:uploads/");
             }
         };
     }

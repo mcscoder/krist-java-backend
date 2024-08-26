@@ -2,12 +2,12 @@ package com.krist.repository.user;
 
 import java.util.Optional;
 
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.krist.entity.user.PasswordResetOtp;
 import com.krist.entity.user.User;
 
-public interface PasswordResetOtpRepository extends CrudRepository<PasswordResetOtp, Long> {
+public interface PasswordResetOtpRepository extends JpaRepository<PasswordResetOtp, Long> {
 
     // Docs reference:
     // https://docs.spring.io/spring-data/jpa/reference/repositories/core-concepts.html
