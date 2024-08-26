@@ -65,4 +65,8 @@ public class ProductService {
         Pageable pageable = PageRequest.of(0, 8);
         return productRepository.findByOrderBySoldDesc(pageable);
     }
+
+    public List<Product> getProductsByCategoryGroup(Long categoryGroupId) {
+        return productRepository.findProductsByCategoryGroupId(categoryGroupId);
+    }
 }

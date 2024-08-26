@@ -14,6 +14,7 @@ import com.krist.dto.product.PostProductRequestDto;
 import com.krist.entity.product.Product;
 import com.krist.service.product.ProductService;
 
+
 @RestController
 @RequestMapping("/public")
 public class ProductController {
@@ -49,4 +50,8 @@ public class ProductController {
         return ResponseEntity.ok().body(productService.getBestSellers());
     }
 
+    @GetMapping("/products/category-group/{categoryGroupId}")
+    public ResponseEntity<List<Product>> getProductsByCategoryGroup(@PathVariable Long categoryGroupId) {
+        return ResponseEntity.ok(productService.getProductsByCategoryGroup(categoryGroupId));
+    }
 }
