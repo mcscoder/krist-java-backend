@@ -44,7 +44,7 @@ public class UploadController {
 
             // Process each file
             for (MultipartFile file : files) {
-                String filename = Instant.now().toEpochMilli() + "-" + file.getOriginalFilename();
+                String filename = Instant.now().toEpochMilli() + "-" + file.hashCode() + "-" + file.getOriginalFilename();
 
                 if (filename != null) {
                     Path filePath = uploadPath.resolve(filename);

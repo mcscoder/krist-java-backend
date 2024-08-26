@@ -1,5 +1,6 @@
 package com.krist.entity.product;
 
+import java.util.List;
 import java.util.Set;
 
 import com.krist.entity.common.BaseEntity;
@@ -13,6 +14,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -34,7 +36,9 @@ public class Product extends BaseEntity {
     @Column(nullable = false)
     private String title;
 
-    @Column(nullable = false)
+    // Reference docs:
+    // https://stackoverflow.com/a/13364085/20232773
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String description;
 
     @Column(nullable = false)
@@ -52,16 +56,22 @@ public class Product extends BaseEntity {
             inverseJoinColumns = @JoinColumn(name = "category_id"))
     private Set<Category> categories;
 
+    // 3. Product Variants
+    @OneToMany(mappedBy = "product")
+    private List<ProductVariant> productVariants;
+
     public Product(Long id) {
         this.id = id;
     }
 
-    public Product(String name, String title, String description, Set<Image> images,
-            Set<Category> categories) {
+    public Product(String name, String title, String description, Integer sold, Set<Image> images,
+            Set<Category> categories, List<ProductVariant> productVariants) {
         this.name = name;
         this.title = title;
         this.description = description;
+        this.sold = sold;
         this.images = images;
         this.categories = categories;
+        this.productVariants = productVariants;
     }
 }

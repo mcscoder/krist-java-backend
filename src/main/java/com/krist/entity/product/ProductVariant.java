@@ -2,6 +2,7 @@ package com.krist.entity.product;
 
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.krist.entity.common.BaseEntity;
 
 import jakarta.persistence.Column;
@@ -34,11 +35,13 @@ public class ProductVariant extends BaseEntity {
     @Column(nullable = false)
     private Integer quantity;
 
+    // 1. Product
     @ManyToOne
     @JoinColumn(name = "product_id")
+    @JsonIgnore
     private Product product;
 
-    // 1. Attributes
+    // 2. Attributes
     @ManyToMany
     @JoinTable(name = "variant_attribute", joinColumns = @JoinColumn(name = "product_variant_id"),
             inverseJoinColumns = @JoinColumn(name = "attribute_value_id"))

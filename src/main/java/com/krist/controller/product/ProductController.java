@@ -43,4 +43,10 @@ public class ProductController {
     public ResponseEntity<List<Product>> getProducts() {
         return ResponseEntity.ok().body(productService.getProducts());
     }
+
+    @GetMapping("/best-sellers")
+    public ResponseEntity<List<Product>> getBestSellers() {
+        return ResponseEntity.ok().body(productService.getBestSellers());
+    }
+
 }

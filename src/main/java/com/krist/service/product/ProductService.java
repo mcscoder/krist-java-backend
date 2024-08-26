@@ -5,6 +5,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.krist.dto.product.PostProductRequestDto;
@@ -35,7 +37,7 @@ public class ProductService {
         }
 
         Product product =
-                new Product(dto.name(), dto.title(), dto.description(), images, categories);
+                new Product(dto.name(), dto.title(), dto.description(), 0, images, categories, null);
 
         return productRepository.save(product);
     }
@@ -57,5 +59,10 @@ public class ProductService {
 
     public List<Product> getProducts() {
         return productRepository.findAll();
+    }
+
+    public List<Product> getBestSellers() {
+        Pageable pageable = PageRequest.of(0, 8);
+        return productRepository.findByOrderBySoldDesc(pageable);
     }
 }
