@@ -47,4 +47,8 @@ public class CategoryService {
     public List<Category> getCategories() {
         return categoryRepository.findAll();
     }
+
+    public List<Category> getCategoriesByCategoryGroup(Long categoryGroupId) {
+        return categoryRepository.findCategoriesByCategoryGroupId(categoryGroupId);
+    }
 }

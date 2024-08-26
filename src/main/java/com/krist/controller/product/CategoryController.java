@@ -44,4 +44,11 @@ public class CategoryController {
         return ResponseEntity.ok().body(categoryService.getCategories());
     }
 
+    @GetMapping("/categories/category-group/{categoryGroupId}")
+    public ResponseEntity<List<Category>> getCategoriesByCategoryGroup(
+            @PathVariable Long categoryGroupId) {
+        return ResponseEntity.ok()
+                .body(categoryService.getCategoriesByCategoryGroup(categoryGroupId));
+    }
+
 }
