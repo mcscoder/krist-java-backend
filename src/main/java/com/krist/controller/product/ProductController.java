@@ -1,5 +1,6 @@
 package com.krist.controller.product;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
@@ -8,12 +9,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.krist.dto.product.PostProductRequestDto;
 import com.krist.entity.product.Product;
 import com.krist.service.product.ProductService;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/public")
@@ -52,8 +53,14 @@ public class ProductController {
 
     @GetMapping("/products/category-group/{categoryGroupId}")
     public ResponseEntity<List<Product>> getProductsByCategoryGroup(
-            @PathVariable Long categoryGroupId) {
-        return ResponseEntity.ok(productService.getProductsByCategoryGroup(categoryGroupId));
+            @PathVariable Long categoryGroupId, @RequestParam(required = false) String categories) {
+        List<Long> categoryIds = new ArrayList<>();
+        for (String categoryId : categories.split("-")) {
+            categoryIds.add(Long.valueOf(categoryId));
+        }
+
+        return ResponseEntity
+                .ok(productService.getProductsByCategoryGroup(categoryGroupId, categoryIds));
     }
 
     @GetMapping("/products/category/{categoryId}")

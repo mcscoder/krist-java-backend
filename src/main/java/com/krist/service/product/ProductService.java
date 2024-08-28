@@ -66,8 +66,13 @@ public class ProductService {
         return productRepository.findByOrderBySoldDesc(pageable);
     }
 
-    public List<Product> getProductsByCategoryGroup(Long categoryGroupId) {
-        return productRepository.findProductsByCategoryGroupId(categoryGroupId);
+    public List<Product> getProductsByCategoryGroup(Long categoryGroupId, List<Long> categoryIds) {
+        if (categoryIds.size() == 0) {
+            return productRepository.findProductsByCategoryGroupId(categoryGroupId);
+        }
+
+        return productRepository.findProductsByCategoryGroupIdAndCategoryIds(categoryGroupId,
+                categoryIds);
     }
 
     public List<Product> getProductsByCategory(Long categoryId) {
