@@ -1,7 +1,10 @@
 package com.krist.controller.product;
 
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -51,20 +54,30 @@ public class ProductController {
         return ResponseEntity.ok().body(productService.getBestSellers());
     }
 
-    @GetMapping("/products/category-group/{categoryGroupId}")
-    public ResponseEntity<List<Product>> getProductsByCategoryGroup(
-            @PathVariable Long categoryGroupId, @RequestParam(required = false) String categories) {
-        List<Long> categoryIds = new ArrayList<>();
-        for (String categoryId : categories.split("-")) {
-            categoryIds.add(Long.valueOf(categoryId));
-        }
-
-        return ResponseEntity
-                .ok(productService.getProductsByCategoryGroup(categoryGroupId, categoryIds));
+    @GetMapping("/products/category-group/{groupCategoryId}")
+    public List<Product> getMethodName(@PathVariable Long groupCategoryId,
+            @RequestParam(required = false) List<Long> categories,
+            @RequestParam(required = false) String attributes,
+            @RequestParam(required = false, defaultValue = "latest") String sort,
+            @RequestParam(required = false, defaultValue = "0") Integer page) {
+        return productService.findProductsByFilters(groupCategoryId, categories,
+                parseAttributes(attributes), sort, page);
     }
 
-    @GetMapping("/products/category/{categoryId}")
-    public ResponseEntity<List<Product>> getProductsByCategory(@PathVariable Long categoryId) {
-        return ResponseEntity.ok().body(productService.getProductsByCategory(categoryId));
+    private Map<Long, List<Long>> parseAttributes(String attributes) {
+        Map<Long, List<Long>> filtersMap = new HashMap<>();
+        if (attributes != null && !attributes.isEmpty()) {
+            String[] filters = attributes.split("_");
+            for (String filter : filters) {
+                String[] parts = filter.split("-");
+                if (parts.length == 2) {
+                    Long attributeId = Long.parseLong(parts[0]);
+                    List<Long> valueIds = Arrays.stream(parts[1].split(",")).map(Long::parseLong)
+                            .collect(Collectors.toList());
+                    filtersMap.put(attributeId, valueIds);
+                }
+            }
+        }
+        return filtersMap;
     }
 }
