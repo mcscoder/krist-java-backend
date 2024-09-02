@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.krist.dto.product.PostProductRequestDto;
+import com.krist.dto.product.ProductOverviewListDto;
 import com.krist.entity.product.Product;
 import com.krist.service.product.ProductService;
 
@@ -55,13 +56,15 @@ public class ProductController {
     }
 
     @GetMapping("/products/category-group/{groupCategoryId}")
-    public List<Product> getMethodName(@PathVariable Long groupCategoryId,
+    public ResponseEntity<ProductOverviewListDto> getProductOverviewListByFilters(
+            @PathVariable Long groupCategoryId,
             @RequestParam(required = false) List<Long> categories,
             @RequestParam(required = false) String attributes,
-            @RequestParam(required = false, defaultValue = "latest") String sort,
-            @RequestParam(required = false, defaultValue = "0") Integer page) {
-        return productService.findProductsByFilters(groupCategoryId, categories,
-                parseAttributes(attributes), sort, page);
+            @RequestParam(required = false, defaultValue = "outstanding") String sort,
+            @RequestParam(required = false, defaultValue = "0") Integer page,
+            @RequestParam(required = false, defaultValue = "6") Integer pageSize) {
+        return ResponseEntity.ok().body(productService.findProductOverviewListByFilters(
+                groupCategoryId, categories, parseAttributes(attributes), sort, page, pageSize));
     }
 
     private Map<Long, List<Long>> parseAttributes(String attributes) {

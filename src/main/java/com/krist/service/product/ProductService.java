@@ -11,6 +11,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.krist.dto.product.PostProductRequestDto;
+import com.krist.dto.product.ProductOverviewListDto;
+import com.krist.dto.product.ProductOverviewDto;
 import com.krist.entity.common.Image;
 import com.krist.entity.product.Attribute;
 import com.krist.entity.product.AttributeValue;
@@ -54,8 +56,7 @@ public class ProductService {
             categories.add(new Category(categoryId));
         }
 
-        Product product = new Product(dto.name(), dto.title(), dto.description(), 0, images,
-                categories, null);
+        Product product = new Product(dto.name(), dto.title(), dto.description(), 0, images, categories, null);
 
         return productRepository.save(product);
     }
@@ -71,8 +72,7 @@ public class ProductService {
     }
 
     public Product getProduct(Long id) {
-        return productRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Product not found"));
+        return productRepository.findById(id).orElseThrow(() -> new NotFoundException("Product not found"));
     }
 
     public List<Product> getProducts() {
@@ -84,18 +84,22 @@ public class ProductService {
         return productRepository.findByOrderBySoldDesc(pageable);
     }
 
-    public List<Product> findProductsByFilters(Long categoryGroupId, List<Long> categoryIds,
-            Map<Long, List<Long>> attributes, String sortDirection, Integer pageNumber) {
+    public ProductOverviewListDto findProductOverviewListByFilters(Long categoryGroupId, List<Long> categoryIds,
+            Map<Long, List<Long>> attributes, String sortDirection, Integer pageNumber, Integer pageSize) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Product> query = cb.createQuery(Product.class);
+
+        // Using JPA Projection
+        CriteriaQuery<ProductOverviewDto> query = cb.createQuery(ProductOverviewDto.class);
         Root<Product> product = query.from(Product.class);
 
         // 1. Join with categories
         Join<Product, Category> categoryJoin = product.join("categories", JoinType.LEFT);
         // 2. Join with categoryGroup
-        Join<Category, CategoryGroup> categoryGroupJoin =
-                categoryJoin.join("categoryGroup", JoinType.LEFT);
+        Join<Category, CategoryGroup> categoryGroupJoin = categoryJoin.join("categoryGroup", JoinType.LEFT);
+        // 3. Join with images
+        Join<Product, Image> imageJoin = product.join("images", JoinType.LEFT);
 
+        // List to hold dynamic predicates for filtering
         List<Predicate> predicates = new ArrayList<>();
 
         // 1. Filter by Category Group
@@ -108,61 +112,67 @@ public class ProductService {
             predicates.add(categoryJoin.get("id").in(categoryIds));
         }
 
-        // 3. Filter by Attributes
+        // 3. Filter by Attributes and their corresponding values
         attributes.forEach((attributeId, attributeValueIds) -> {
             // 1. Join with productVariants
-            Join<Product, ProductVariant> productVariantJoin =
-                    product.join("productVariants", JoinType.LEFT);
+            Join<Product, ProductVariant> productVariantJoin = product.join("productVariants", JoinType.LEFT);
             // 2. Join with attributeValues
             Join<ProductVariant, AttributeValue> attributeValueJoin =
                     productVariantJoin.join("attributeValues", JoinType.LEFT);
             // 3. Join with attribute
             Join<AttributeValue, Attribute> attributeJoin = attributeValueJoin.join("attribute");
 
+            // Predicate to filter by specific attribute and its values
             Predicate attributePredicate = cb.and(cb.equal(attributeJoin.get("id"), attributeId),
                     attributeValueJoin.get("id").in(attributeValueIds));
             predicates.add(attributePredicate);
         });
 
-        // Apply filters
-        query.select(product).where(cb.and(predicates.toArray(new Predicate[0])));
+        // Subquery to calculate the lowest price among all products variants
+        Subquery<Double> lowestPriceSubQuery = query.subquery(Double.class);
+        Root<ProductVariant> productVariantSubRoot = lowestPriceSubQuery.from(ProductVariant.class);
+        lowestPriceSubQuery.select(cb.min(productVariantSubRoot.get("price")))
+                .where(cb.equal(productVariantSubRoot.get("product"), product));
 
-        // Sorting logic
+        // Construct the main query to select specific fields required by the DTO
+        query.distinct(true)
+                .select(cb.construct(ProductOverviewDto.class, product.get("id"), product.get("name"),
+                        product.get("title"), product.get("description"), product.get("sold"), imageJoin.get("src"),
+                        lowestPriceSubQuery.getSelection()))
+                .where(cb.and(predicates.toArray(new Predicate[0])));
+
+        // Sorting logic based on provided sort direction
         List<Order> orderList = new ArrayList<>();
         if ("price_asc".equalsIgnoreCase(sortDirection)) {
-            // 1. Sorting by lowest price
-            Subquery<Double> minPriceSubquery = query.subquery(Double.class);
-            Root<ProductVariant> productVariantSubRoot =
-                    minPriceSubquery.from(ProductVariant.class);
-            minPriceSubquery.select(cb.min(productVariantSubRoot.get("price")))
-                    .where(cb.equal(productVariantSubRoot.get("product"), product));
-            orderList.add(cb.asc(minPriceSubquery));
+            // 1. Sorting by lowest price first
+            orderList.add(cb.asc(lowestPriceSubQuery));
         } else if ("price_desc".equalsIgnoreCase(sortDirection)) {
-            // 2. Sorting by highest price
-            Subquery<Double> maxPriceSubquery = query.subquery(Double.class);
-            Root<ProductVariant> productVariantSubRoot =
-                    maxPriceSubquery.from(ProductVariant.class);
-            maxPriceSubquery.select(cb.min(productVariantSubRoot.get("price")))
-                    .where(cb.equal(productVariantSubRoot.get("product"), product));
-            orderList.add(cb.desc(maxPriceSubquery));
+            // 2. Sorting by highest price first
+            orderList.add(cb.desc(lowestPriceSubQuery));
         } else if ("latest".equalsIgnoreCase(sortDirection)) {
             // 3. Sorting by newest (assuming p.id or p.createdAt determines the newest)
             orderList.add(cb.desc(product.get("id"))); // it can be "createdAt" if available
-        } else {
+        } else if ("outstanding".equalsIgnoreCase(sortDirection)) {
+            // Default case set by controller
             // 4. Sorting by outstanding (by sold)
             orderList.add(cb.desc(product.get("sold")));
         }
 
+        // Add a default sorting order to ensure consistent results
+        orderList.add(cb.asc(product.get("id"))); // Default order by product ID
         query.orderBy(orderList);
 
-        Integer pageSize = 10;
+        TypedQuery<ProductOverviewDto> typedQuery = entityManager.createQuery(query);
 
-        TypedQuery<Product> typedQuery = entityManager.createQuery(query);
+        // Get total count of filtered items (for pagination purpose)
+        Integer numberOfItems = typedQuery.getResultList().size();
+
+        // Limit the item will be returned
         typedQuery.setFirstResult(pageNumber * pageSize); // Start position
         typedQuery.setMaxResults(pageSize); // Number of results per page
 
         // Execute the query with pagination
-        return typedQuery.getResultList();
+        return new ProductOverviewListDto(typedQuery.getResultList(), numberOfItems / pageSize, pageNumber,
+                pageSize, numberOfItems);
     }
-
 }
