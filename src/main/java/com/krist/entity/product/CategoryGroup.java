@@ -2,6 +2,7 @@ package com.krist.entity.product;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.krist.entity.common.BaseEntity;
 import com.krist.entity.common.Image;
 
@@ -31,12 +32,22 @@ public class CategoryGroup extends BaseEntity {
     @Column(nullable = false)
     private String name;
 
+    // 1. Categories
     @OneToMany(mappedBy = "categoryGroup")
     private List<Category> categories;
+
+    // 2. Attributes
+    @OneToMany(mappedBy = "categoryGroup")
+    @JsonManagedReference
+    private List<Attribute> attributes;
 
     @OneToOne
     @JoinColumn(name = "image_id")
     private Image image;
+
+    public CategoryGroup(Long id) {
+        this.id = id;
+    }
 
     public CategoryGroup(String name, Image image) {
         this.name = name;

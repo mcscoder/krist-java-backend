@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.krist.dto.product.PostAttributeRequestDto;
 import com.krist.entity.product.Attribute;
+import com.krist.entity.product.CategoryGroup;
 import com.krist.exception.custom.NotFoundException;
 import com.krist.repository.product.AttributeRepository;
 
@@ -19,7 +20,8 @@ public class AttributeService {
     }
 
     public Attribute postAttribute(PostAttributeRequestDto dto) {
-        Attribute attribute = new Attribute(dto.name());
+        CategoryGroup categoryGroup = new CategoryGroup(dto.categoryGroupId());
+        Attribute attribute = new Attribute(dto.name(), categoryGroup);
 
         return attributeRepository.save(attribute);
     }

@@ -3,6 +3,7 @@ package com.krist.service.product;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.springframework.data.domain.PageRequest;
@@ -10,18 +11,37 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.krist.dto.product.PostProductRequestDto;
+import com.krist.dto.product.ProductOverviewListDto;
+import com.krist.dto.product.ProductOverviewDto;
 import com.krist.entity.common.Image;
+import com.krist.entity.product.Attribute;
+import com.krist.entity.product.AttributeValue;
 import com.krist.entity.product.Category;
+import com.krist.entity.product.CategoryGroup;
 import com.krist.entity.product.Product;
+import com.krist.entity.product.ProductVariant;
 import com.krist.exception.custom.NotFoundException;
 import com.krist.repository.product.ProductRepository;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Order;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 
 @Service
 public class ProductService {
     private final ProductRepository productRepository;
+    private final EntityManager entityManager;
 
-    public ProductService(ProductRepository productRepository) {
+    public ProductService(ProductRepository productRepository, EntityManager entityManager) {
         this.productRepository = productRepository;
+        this.entityManager = entityManager;
     };
 
     public Product postProduct(PostProductRequestDto dto) {
@@ -36,8 +56,7 @@ public class ProductService {
             categories.add(new Category(categoryId));
         }
 
-        Product product =
-                new Product(dto.name(), dto.title(), dto.description(), 0, images, categories, null);
+        Product product = new Product(dto.name(), dto.title(), dto.description(), 0, images, categories, null);
 
         return productRepository.save(product);
     }
@@ -53,8 +72,7 @@ public class ProductService {
     }
 
     public Product getProduct(Long id) {
-        return productRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Product not found"));
+        return productRepository.findById(id).orElseThrow(() -> new NotFoundException("Product not found"));
     }
 
     public List<Product> getProducts() {
@@ -64,5 +82,97 @@ public class ProductService {
     public List<Product> getBestSellers() {
         Pageable pageable = PageRequest.of(0, 8);
         return productRepository.findByOrderBySoldDesc(pageable);
+    }
+
+    public ProductOverviewListDto findProductOverviewListByFilters(Long categoryGroupId, List<Long> categoryIds,
+            Map<Long, List<Long>> attributes, String sortDirection, Integer pageNumber, Integer pageSize) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+
+        // Using JPA Projection
+        CriteriaQuery<ProductOverviewDto> query = cb.createQuery(ProductOverviewDto.class);
+        Root<Product> product = query.from(Product.class);
+
+        // 1. Join with categories
+        Join<Product, Category> categoryJoin = product.join("categories", JoinType.LEFT);
+        // 2. Join with categoryGroup
+        Join<Category, CategoryGroup> categoryGroupJoin = categoryJoin.join("categoryGroup", JoinType.LEFT);
+        // 3. Join with images
+        Join<Product, Image> imageJoin = product.join("images", JoinType.LEFT);
+
+        // List to hold dynamic predicates for filtering
+        List<Predicate> predicates = new ArrayList<>();
+
+        // 1. Filter by Category Group
+        if (categoryGroupId != null) {
+            predicates.add(cb.equal(categoryGroupJoin.get("id"), categoryGroupId));
+        }
+
+        // 2. Filter by Categories
+        if (categoryIds != null && !categoryIds.isEmpty()) {
+            predicates.add(categoryJoin.get("id").in(categoryIds));
+        }
+
+        // 3. Filter by Attributes and their corresponding values
+        attributes.forEach((attributeId, attributeValueIds) -> {
+            // 1. Join with productVariants
+            Join<Product, ProductVariant> productVariantJoin = product.join("productVariants", JoinType.LEFT);
+            // 2. Join with attributeValues
+            Join<ProductVariant, AttributeValue> attributeValueJoin =
+                    productVariantJoin.join("attributeValues", JoinType.LEFT);
+            // 3. Join with attribute
+            Join<AttributeValue, Attribute> attributeJoin = attributeValueJoin.join("attribute");
+
+            // Predicate to filter by specific attribute and its values
+            Predicate attributePredicate = cb.and(cb.equal(attributeJoin.get("id"), attributeId),
+                    attributeValueJoin.get("id").in(attributeValueIds));
+            predicates.add(attributePredicate);
+        });
+
+        // Subquery to calculate the lowest price among all products variants
+        Subquery<Double> lowestPriceSubQuery = query.subquery(Double.class);
+        Root<ProductVariant> productVariantSubRoot = lowestPriceSubQuery.from(ProductVariant.class);
+        lowestPriceSubQuery.select(cb.min(productVariantSubRoot.get("price")))
+                .where(cb.equal(productVariantSubRoot.get("product"), product));
+
+        // Construct the main query to select specific fields required by the DTO
+        query.distinct(true)
+                .select(cb.construct(ProductOverviewDto.class, product.get("id"), product.get("name"),
+                        product.get("title"), product.get("description"), product.get("sold"), imageJoin.get("src"),
+                        lowestPriceSubQuery.getSelection()))
+                .where(cb.and(predicates.toArray(new Predicate[0])));
+
+        // Sorting logic based on provided sort direction
+        List<Order> orderList = new ArrayList<>();
+        if ("price_asc".equalsIgnoreCase(sortDirection)) {
+            // 1. Sorting by lowest price first
+            orderList.add(cb.asc(lowestPriceSubQuery));
+        } else if ("price_desc".equalsIgnoreCase(sortDirection)) {
+            // 2. Sorting by highest price first
+            orderList.add(cb.desc(lowestPriceSubQuery));
+        } else if ("latest".equalsIgnoreCase(sortDirection)) {
+            // 3. Sorting by newest (assuming p.id or p.createdAt determines the newest)
+            orderList.add(cb.desc(product.get("id"))); // it can be "createdAt" if available
+        } else if ("outstanding".equalsIgnoreCase(sortDirection)) {
+            // Default case set by controller
+            // 4. Sorting by outstanding (by sold)
+            orderList.add(cb.desc(product.get("sold")));
+        }
+
+        // Add a default sorting order to ensure consistent results
+        orderList.add(cb.asc(product.get("id"))); // Default order by product ID
+        query.orderBy(orderList);
+
+        TypedQuery<ProductOverviewDto> typedQuery = entityManager.createQuery(query);
+
+        // Get total count of filtered items (for pagination purpose)
+        Integer numberOfItems = typedQuery.getResultList().size();
+
+        // Limit the item will be returned
+        typedQuery.setFirstResult(pageNumber * pageSize); // Start position
+        typedQuery.setMaxResults(pageSize); // Number of results per page
+
+        // Execute the query with pagination
+        return new ProductOverviewListDto(typedQuery.getResultList(), numberOfItems / pageSize, pageNumber,
+                pageSize, numberOfItems);
     }
 }

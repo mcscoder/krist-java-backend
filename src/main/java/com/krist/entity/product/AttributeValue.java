@@ -1,5 +1,6 @@
 package com.krist.entity.product;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.krist.entity.common.BaseEntity;
 
 import jakarta.persistence.Column;
@@ -30,6 +31,7 @@ public class AttributeValue extends BaseEntity {
     // 1. Attribute
     @ManyToOne
     @JoinColumn(name = "attribute_id")
+    @JsonBackReference
     private Attribute attribute;
 
     public AttributeValue(Long id) {
