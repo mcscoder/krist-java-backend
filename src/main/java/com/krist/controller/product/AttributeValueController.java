@@ -10,10 +10,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.krist.dto.product.AttributeValueDto;
 import com.krist.dto.product.PostAttributeValueRequestDto;
-import com.krist.entity.product.AttributeValue;
 import com.krist.service.product.AttributeValueService;
-
 
 @RestController
 @RequestMapping("/public")
@@ -25,23 +24,26 @@ public class AttributeValueController {
     }
 
     @PostMapping("/attribute-value")
-    public ResponseEntity<AttributeValue> postAttributeValue(
+    public ResponseEntity<AttributeValueDto> postAttributeValue(
             @RequestBody PostAttributeValueRequestDto dto) {
-        return ResponseEntity.ok().body(attributeValueService.postAttributeValue(dto));
+        return ResponseEntity.ok().body(attributeValueService.postAttributeValue(dto).toDto());
     }
 
     @PostMapping("/attribute-values")
-    public ResponseEntity<List<AttributeValue>> postAttributeValues(@RequestBody List<PostAttributeValueRequestDto> dtos) {
-        return ResponseEntity.ok().body(attributeValueService.postAttributeValues(dtos));
+    public ResponseEntity<List<AttributeValueDto>> postAttributeValues(
+            @RequestBody List<PostAttributeValueRequestDto> dtos) {
+        return ResponseEntity.ok().body(attributeValueService.postAttributeValues(dtos).stream()
+                .map((attributeValue -> attributeValue.toDto())).toList());
     }
-    
+
     @GetMapping("/attribute-value/{id}")
-    public ResponseEntity<AttributeValue> getAttributeValue(@PathVariable Long id) {
-        return ResponseEntity.ok().body(attributeValueService.getAttributeValue(id));
+    public ResponseEntity<AttributeValueDto> getAttributeValue(@PathVariable Long id) {
+        return ResponseEntity.ok().body(attributeValueService.getAttributeValue(id).toDto());
     }
-    
+
     @GetMapping("/attribute-values")
-    public ResponseEntity<List<AttributeValue>> getAttributeValues() {
-        return ResponseEntity.ok().body(attributeValueService.getAttributeValues());
+    public ResponseEntity<List<AttributeValueDto>> getAttributeValues() {
+        return ResponseEntity.ok().body(attributeValueService.getAttributeValues().stream()
+                .map((attributeValue -> attributeValue.toDto())).toList());
     }
 }

@@ -5,8 +5,12 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.krist.dto.product.AttributeDto;
+import com.krist.dto.product.AttributeValueDto;
+import com.krist.dto.product.AttributeWithAttributeValuesDto;
 import com.krist.dto.product.PostAttributeRequestDto;
 import com.krist.entity.product.Attribute;
+import com.krist.entity.product.AttributeValue;
 import com.krist.entity.product.CategoryGroup;
 import com.krist.exception.custom.NotFoundException;
 import com.krist.repository.product.AttributeRepository;
@@ -43,5 +47,54 @@ public class AttributeService {
 
     public List<Attribute> getAttributes() {
         return attributeRepository.findAll();
+    }
+
+    private AttributeWithAttributeValuesDto parseAttributeToAttributeWithAttributeValues(
+            Attribute attribute) {
+        return new AttributeWithAttributeValuesDto(
+                new AttributeDto(attribute.getId(), attribute.getName()),
+                attribute.getAttributeValues().stream().map((attributeValue) -> {
+                    return new AttributeValueDto(attributeValue.getId(), attributeValue.getName());
+                }).toList());
+    }
+
+    public List<AttributeWithAttributeValuesDto> getAttributesWithAttributeValuesByCategoryGroup(
+            Long categoryGroupId) {
+        return attributeRepository.findAttributesByCategoryGroupId(categoryGroupId).stream()
+                .map(attributeResult -> {
+                    return parseAttributeToAttributeWithAttributeValues(attributeResult);
+                }).toList();
+    }
+
+    public List<AttributeWithAttributeValuesDto> getAttributesWithAttributeValuesByProduct(
+            Long productId) {
+        List<AttributeValue> attributeValues =
+                attributeRepository.findAttributesByProductId(productId);
+
+        List<AttributeWithAttributeValuesDto> attributeWithAttributeValues = new ArrayList<>();
+
+        attributeValues.forEach((attributeValue) -> {
+            Integer itemIndex = -1;
+            for (Integer i = 0; i < attributeWithAttributeValues.size(); i++) {
+                if (attributeWithAttributeValues.get(i).getAttribute().id()
+                        .equals(attributeValue.getAttribute().getId())) {
+                    itemIndex = i;
+                    break;
+                }
+            }
+
+            if (itemIndex != -1) {
+                attributeWithAttributeValues.get(itemIndex).getAttributeValues().add(
+                        new AttributeValueDto(attributeValue.getId(), attributeValue.getName()));
+            } else {
+                attributeWithAttributeValues.add(new AttributeWithAttributeValuesDto(
+                        new AttributeDto(attributeValue.getAttribute().getId(),
+                                attributeValue.getAttribute().getName()),
+                        new ArrayList<>(List.of(new AttributeValueDto(attributeValue.getId(),
+                                attributeValue.getName())))));
+            }
+        });
+
+        return attributeWithAttributeValues;
     }
 }

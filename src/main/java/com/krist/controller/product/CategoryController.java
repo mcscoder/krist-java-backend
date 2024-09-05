@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.krist.dto.product.CategoryDto;
 import com.krist.dto.product.PostCategoryRequestDto;
-import com.krist.entity.product.Category;
 import com.krist.service.product.CategoryService;
 
 @RestController
@@ -24,31 +24,33 @@ public class CategoryController {
     }
 
     @PostMapping("/category")
-    public ResponseEntity<Category> postCategory(@RequestBody PostCategoryRequestDto dto) {
-        return ResponseEntity.ok().body(categoryService.postCategory(dto));
+    public ResponseEntity<CategoryDto> postCategory(@RequestBody PostCategoryRequestDto dto) {
+        return ResponseEntity.ok().body(categoryService.postCategory(dto).toDto());
     }
 
     @PostMapping("/categories")
-    public ResponseEntity<List<Category>> postCategories(
+    public ResponseEntity<List<CategoryDto>> postCategories(
             @RequestBody List<PostCategoryRequestDto> dtos) {
-        return ResponseEntity.ok().body(categoryService.postCategories(dtos));
+        return ResponseEntity.ok().body(categoryService.postCategories(dtos).stream()
+                .map(category -> category.toDto()).toList());
     }
 
     @GetMapping("/category/{id}")
-    public ResponseEntity<Category> getCategory(@PathVariable Long id) {
-        return ResponseEntity.ok().body(categoryService.getCategory(id));
+    public ResponseEntity<CategoryDto> getCategory(@PathVariable Long id) {
+        return ResponseEntity.ok().body(categoryService.getCategory(id).toDto());
     }
 
     @GetMapping("/categories")
-    public ResponseEntity<List<Category>> getCategories() {
-        return ResponseEntity.ok().body(categoryService.getCategories());
+    public ResponseEntity<List<CategoryDto>> getCategories() {
+        return ResponseEntity.ok().body(categoryService.getCategories().stream()
+                .map(category -> category.toDto()).toList());
     }
 
     @GetMapping("/categories/category-group/{categoryGroupId}")
-    public ResponseEntity<List<Category>> getCategoriesByCategoryGroup(
+    public ResponseEntity<List<CategoryDto>> getCategoriesByCategoryGroup(
             @PathVariable Long categoryGroupId) {
         return ResponseEntity.ok()
-                .body(categoryService.getCategoriesByCategoryGroup(categoryGroupId));
+                .body(categoryService.getCategoriesByCategoryGroup(categoryGroupId).stream()
+                        .map(category -> category.toDto()).toList());
     }
-
 }

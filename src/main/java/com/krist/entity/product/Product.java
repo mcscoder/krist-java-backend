@@ -3,11 +3,14 @@ package com.krist.entity.product;
 import java.util.List;
 import java.util.Set;
 
+import com.krist.dto.common.ImageDto;
+import com.krist.dto.product.ProductDto;
 import com.krist.entity.common.BaseEntity;
 import com.krist.entity.common.Image;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -45,19 +48,19 @@ public class Product extends BaseEntity {
     private Integer sold;
 
     // 1. Images
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "product_image", joinColumns = @JoinColumn(name = "product_id"),
             inverseJoinColumns = @JoinColumn(name = "image_id"))
     private Set<Image> images;
 
     // 2. Categories
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "product_category", joinColumns = @JoinColumn(name = "product_id"),
             inverseJoinColumns = @JoinColumn(name = "category_id"))
     private Set<Category> categories;
 
     // 3. Product Variants
-    @OneToMany(mappedBy = "product")
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     private List<ProductVariant> productVariants;
 
     public Product(Long id) {
@@ -73,5 +76,11 @@ public class Product extends BaseEntity {
         this.images = images;
         this.categories = categories;
         this.productVariants = productVariants;
+    }
+
+    @Override
+    public ProductDto toDto() {
+        return new ProductDto(id, name, title, description, sold,
+                images.stream().map(image -> new ImageDto(image.getId(), image.getSrc())).toList());
     }
 }

@@ -14,16 +14,13 @@ import com.krist.repository.product.CategoryRepository;
 @Service
 public class CategoryService {
     private final CategoryRepository categoryRepository;
-    private final CategoryGroupService categoryGroupService;
 
-    public CategoryService(CategoryRepository categoryRepository,
-            CategoryGroupService categoryGroupService) {
+    public CategoryService(CategoryRepository categoryRepository) {
         this.categoryRepository = categoryRepository;
-        this.categoryGroupService = categoryGroupService;
     }
 
     public Category postCategory(PostCategoryRequestDto dto) {
-        CategoryGroup categoryGroup = categoryGroupService.getCategoryGroup(dto.categoryGroupId());
+        CategoryGroup categoryGroup = new CategoryGroup(dto.categoryGroupId());
         Category category = new Category(dto.name(), categoryGroup);
 
         return categoryRepository.save(category);

@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.krist.dto.product.CategoryGroupDto;
 import com.krist.dto.product.PostCategoryGroupRequestDto;
-import com.krist.entity.product.CategoryGroup;
 import com.krist.service.product.CategoryGroupService;
 
 @RestController
@@ -24,24 +24,26 @@ public class CategoryGroupController {
     }
 
     @PostMapping("/category-group")
-    public ResponseEntity<CategoryGroup> postCategoryGroup(
+    public ResponseEntity<CategoryGroupDto> postCategoryGroup(
             @RequestBody PostCategoryGroupRequestDto dto) {
-        return ResponseEntity.ok().body(categoryGroupService.postCategoryGroup(dto));
+        return ResponseEntity.ok().body(categoryGroupService.postCategoryGroup(dto).toDto());
     }
 
     @PostMapping("/category-groups")
-    public ResponseEntity<List<CategoryGroup>> postCategoryGroups(
+    public ResponseEntity<List<CategoryGroupDto>> postCategoryGroups(
             @RequestBody List<PostCategoryGroupRequestDto> dtos) {
-        return ResponseEntity.ok().body(categoryGroupService.postCategoryGroups(dtos));
+        return ResponseEntity.ok().body(categoryGroupService.postCategoryGroups(dtos).stream()
+                .map(categoryGroup -> categoryGroup.toDto()).toList());
     }
 
     @GetMapping("/category-group/{id}")
-    public ResponseEntity<CategoryGroup> getCategoryGroup(@PathVariable Long id) {
-        return ResponseEntity.ok().body(categoryGroupService.getCategoryGroup(id));
+    public ResponseEntity<CategoryGroupDto> getCategoryGroup(@PathVariable Long id) {
+        return ResponseEntity.ok().body(categoryGroupService.getCategoryGroup(id).toDto());
     }
 
     @GetMapping("/category-groups")
-    public ResponseEntity<List<CategoryGroup>> getCategoryGroups() {
-        return ResponseEntity.ok().body(categoryGroupService.getCategoryGroups());
+    public ResponseEntity<List<CategoryGroupDto>> getCategoryGroups() {
+        return ResponseEntity.ok().body(categoryGroupService.getCategoryGroups().stream()
+                .map(categoryGroup -> categoryGroup.toDto()).toList());
     }
 }

@@ -10,9 +10,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.krist.dto.product.AttributeWithAttributeValuesDto;
+import com.krist.dto.product.CategoryDto;
+import com.krist.dto.product.CategoryGroupDto;
 import com.krist.dto.product.PostProductRequestDto;
-import com.krist.dto.product.ProductOverviewListDto;
+import com.krist.dto.product.ProductDetailsDto;
 import com.krist.dto.product.ProductOverviewDto;
+import com.krist.dto.product.ProductOverviewListDto;
 import com.krist.entity.common.Image;
 import com.krist.entity.product.Attribute;
 import com.krist.entity.product.AttributeValue;
@@ -38,10 +42,13 @@ import jakarta.persistence.criteria.Subquery;
 public class ProductService {
     private final ProductRepository productRepository;
     private final EntityManager entityManager;
+    private final AttributeService attributeService;
 
-    public ProductService(ProductRepository productRepository, EntityManager entityManager) {
+    public ProductService(ProductRepository productRepository, EntityManager entityManager,
+            AttributeService attributeService) {
         this.productRepository = productRepository;
         this.entityManager = entityManager;
+        this.attributeService = attributeService;
     };
 
     public Product postProduct(PostProductRequestDto dto) {
@@ -56,7 +63,8 @@ public class ProductService {
             categories.add(new Category(categoryId));
         }
 
-        Product product = new Product(dto.name(), dto.title(), dto.description(), 0, images, categories, null);
+        Product product = new Product(dto.name(), dto.title(), dto.description(), 0, images,
+                categories, null);
 
         return productRepository.save(product);
     }
@@ -72,7 +80,8 @@ public class ProductService {
     }
 
     public Product getProduct(Long id) {
-        return productRepository.findById(id).orElseThrow(() -> new NotFoundException("Product not found"));
+        return productRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Product not found"));
     }
 
     public List<Product> getProducts() {
@@ -84,8 +93,9 @@ public class ProductService {
         return productRepository.findByOrderBySoldDesc(pageable);
     }
 
-    public ProductOverviewListDto findProductOverviewListByFilters(Long categoryGroupId, List<Long> categoryIds,
-            Map<Long, List<Long>> attributes, String sortDirection, Integer pageNumber, Integer pageSize) {
+    public ProductOverviewListDto findProductOverviewListByFilters(Long categoryGroupId,
+            List<Long> categoryIds, Map<Long, List<Long>> attributes, String sortDirection,
+            Integer pageNumber, Integer pageSize) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 
         // Using JPA Projection
@@ -95,7 +105,8 @@ public class ProductService {
         // 1. Join with categories
         Join<Product, Category> categoryJoin = product.join("categories", JoinType.LEFT);
         // 2. Join with categoryGroup
-        Join<Category, CategoryGroup> categoryGroupJoin = categoryJoin.join("categoryGroup", JoinType.LEFT);
+        Join<Category, CategoryGroup> categoryGroupJoin =
+                categoryJoin.join("categoryGroup", JoinType.LEFT);
         // 3. Join with images
         Join<Product, Image> imageJoin = product.join("images", JoinType.LEFT);
 
@@ -115,7 +126,8 @@ public class ProductService {
         // 3. Filter by Attributes and their corresponding values
         attributes.forEach((attributeId, attributeValueIds) -> {
             // 1. Join with productVariants
-            Join<Product, ProductVariant> productVariantJoin = product.join("productVariants", JoinType.LEFT);
+            Join<Product, ProductVariant> productVariantJoin =
+                    product.join("productVariants", JoinType.LEFT);
             // 2. Join with attributeValues
             Join<ProductVariant, AttributeValue> attributeValueJoin =
                     productVariantJoin.join("attributeValues", JoinType.LEFT);
@@ -135,10 +147,9 @@ public class ProductService {
                 .where(cb.equal(productVariantSubRoot.get("product"), product));
 
         // Construct the main query to select specific fields required by the DTO
-        query.distinct(true)
-                .select(cb.construct(ProductOverviewDto.class, product.get("id"), product.get("name"),
-                        product.get("title"), product.get("description"), product.get("sold"), imageJoin.get("src"),
-                        lowestPriceSubQuery.getSelection()))
+        query.distinct(true).select(cb.construct(ProductOverviewDto.class, product.get("id"),
+                product.get("name"), product.get("title"), product.get("description"),
+                product.get("sold"), imageJoin.get("src"), lowestPriceSubQuery.getSelection()))
                 .where(cb.and(predicates.toArray(new Predicate[0])));
 
         // Sorting logic based on provided sort direction
@@ -172,7 +183,22 @@ public class ProductService {
         typedQuery.setMaxResults(pageSize); // Number of results per page
 
         // Execute the query with pagination
-        return new ProductOverviewListDto(typedQuery.getResultList(), numberOfItems / pageSize, pageNumber,
-                pageSize, numberOfItems);
+        return new ProductOverviewListDto(typedQuery.getResultList(), numberOfItems / pageSize,
+                pageNumber, pageSize, numberOfItems);
+    }
+
+    public ProductDetailsDto getProductDetails(Long productId) {
+        Product product = getProduct(productId);
+
+        CategoryDto categoryDto = product.getCategories().toArray(new Category[0])[0].toDto();
+        CategoryGroupDto categoryGroupDto =
+                product.getCategories().toArray(new Category[0])[0].getCategoryGroup().toDto();
+        List<AttributeWithAttributeValuesDto> attributes =
+                attributeService.getAttributesWithAttributeValuesByProduct(productId);
+
+        ProductDetailsDto productDetails =
+                new ProductDetailsDto(product.toDto(), categoryGroupDto, categoryDto, attributes);
+
+        return productDetails;
     }
 }

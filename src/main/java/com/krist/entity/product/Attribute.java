@@ -2,12 +2,12 @@ package com.krist.entity.product;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.krist.dto.product.AttributeDto;
 import com.krist.entity.common.BaseEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -33,14 +33,12 @@ public class Attribute extends BaseEntity {
     private String name;
 
     // 1. Attribute values
-    @OneToMany(mappedBy = "attribute")
-    @JsonManagedReference
+    @OneToMany(mappedBy = "attribute", fetch = FetchType.LAZY)
     private List<AttributeValue> attributeValues;
 
     // 2. Category group
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_group_id")
-    @JsonBackReference
     private CategoryGroup categoryGroup;
 
     public Attribute(Long id) {
@@ -50,5 +48,10 @@ public class Attribute extends BaseEntity {
     public Attribute(String name, CategoryGroup categoryGroup) {
         this.name = name;
         this.categoryGroup = categoryGroup;
+    }
+
+    @Override
+    public AttributeDto toDto() {
+        return new AttributeDto(id, name);
     }
 }

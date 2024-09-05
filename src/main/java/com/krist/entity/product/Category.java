@@ -1,10 +1,11 @@
 package com.krist.entity.product;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.krist.dto.product.CategoryDto;
 import com.krist.entity.common.BaseEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -28,9 +29,8 @@ public class Category extends BaseEntity {
     @Column(nullable = false)
     private String name;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_group_id")
-    @JsonIgnore
     private CategoryGroup categoryGroup;
 
     public Category(Long id) {
@@ -40,5 +40,10 @@ public class Category extends BaseEntity {
     public Category(String name, CategoryGroup categoryGroup) {
         this.name = name;
         this.categoryGroup = categoryGroup;
+    }
+
+    @Override
+    public CategoryDto toDto() {
+        return new CategoryDto(id, name);
     }
 }
