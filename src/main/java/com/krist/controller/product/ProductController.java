@@ -66,14 +66,19 @@ public class ProductController {
             @RequestParam(required = false, defaultValue = "6") Integer pageSize) {
 
         return ResponseEntity.ok()
-                .body(productService.findProductOverviewListByFilters(groupCategoryId, categories,
+                .body(productService.getProductOverviewListByFilters(groupCategoryId, categories,
                         StringParser.parseAttributesWithMultipleValues(attributes), sort, page,
                         pageSize));
     }
 
     @GetMapping("/product/details/{productId}")
     public ResponseEntity<ProductDetailsDto> getProductDetails(@PathVariable Long productId) {
-        return ResponseEntity.ok().body(productService.getProductDetails(productId));
+        return ResponseEntity.ok().body(productService.getProductDetailsByProductId(productId));
     }
 
+    @GetMapping("/products/related/{categoryId}")
+    public ResponseEntity<ProductOverviewListDto> getRelatedProducts(
+            @PathVariable Long categoryId) {
+        return ResponseEntity.ok().body(productService.getRelatedProductsByCategory(categoryId));
+    }
 }

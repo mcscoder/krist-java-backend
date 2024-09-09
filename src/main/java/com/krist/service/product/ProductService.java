@@ -93,7 +93,7 @@ public class ProductService {
         return productRepository.findByOrderBySoldDesc(pageable);
     }
 
-    public ProductOverviewListDto findProductOverviewListByFilters(Long categoryGroupId,
+    public ProductOverviewListDto getProductOverviewListByFilters(Long categoryGroupId,
             List<Long> categoryIds, Map<Long, List<Long>> attributes, String sortDirection,
             Integer pageNumber, Integer pageSize) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
@@ -124,21 +124,25 @@ public class ProductService {
         }
 
         // 3. Filter by Attributes and their corresponding values
-        attributes.forEach((attributeId, attributeValueIds) -> {
-            // 1. Join with productVariants
-            Join<Product, ProductVariant> productVariantJoin =
-                    product.join("productVariants", JoinType.LEFT);
-            // 2. Join with attributeValues
-            Join<ProductVariant, AttributeValue> attributeValueJoin =
-                    productVariantJoin.join("attributeValues", JoinType.LEFT);
-            // 3. Join with attribute
-            Join<AttributeValue, Attribute> attributeJoin = attributeValueJoin.join("attribute");
+        if (attributes != null) {
+            attributes.forEach((attributeId, attributeValueIds) -> {
+                // 1. Join with productVariants
+                Join<Product, ProductVariant> productVariantJoin =
+                        product.join("productVariants", JoinType.LEFT);
+                // 2. Join with attributeValues
+                Join<ProductVariant, AttributeValue> attributeValueJoin =
+                        productVariantJoin.join("attributeValues", JoinType.LEFT);
+                // 3. Join with attribute
+                Join<AttributeValue, Attribute> attributeJoin =
+                        attributeValueJoin.join("attribute");
 
-            // Predicate to filter by specific attribute and its values
-            Predicate attributePredicate = cb.and(cb.equal(attributeJoin.get("id"), attributeId),
-                    attributeValueJoin.get("id").in(attributeValueIds));
-            predicates.add(attributePredicate);
-        });
+                // Predicate to filter by specific attribute and its values
+                Predicate attributePredicate =
+                        cb.and(cb.equal(attributeJoin.get("id"), attributeId),
+                                attributeValueJoin.get("id").in(attributeValueIds));
+                predicates.add(attributePredicate);
+            });
+        }
 
         // Subquery to calculate the lowest price among all products variants
         Subquery<Double> lowestPriceSubQuery = query.subquery(Double.class);
@@ -178,16 +182,19 @@ public class ProductService {
         // Get total count of filtered items (for pagination purpose)
         Integer numberOfItems = typedQuery.getResultList().size();
 
+        // Get the total of page that needs to contain all of items
+        Integer maxPageNumber = (numberOfItems - 1) / pageSize;
+
         // Limit the item will be returned
         typedQuery.setFirstResult(pageNumber * pageSize); // Start position
         typedQuery.setMaxResults(pageSize); // Number of results per page
 
         // Execute the query with pagination
-        return new ProductOverviewListDto(typedQuery.getResultList(), numberOfItems / pageSize,
-                pageNumber, pageSize, numberOfItems);
+        return new ProductOverviewListDto(typedQuery.getResultList(), maxPageNumber, pageNumber,
+                pageSize, numberOfItems);
     }
 
-    public ProductDetailsDto getProductDetails(Long productId) {
+    public ProductDetailsDto getProductDetailsByProductId(Long productId) {
         Product product = getProduct(productId);
 
         CategoryDto categoryDto = product.getCategories().toArray(new Category[0])[0].toDto();
@@ -200,5 +207,9 @@ public class ProductService {
                 new ProductDetailsDto(product.toDto(), categoryGroupDto, categoryDto, attributes);
 
         return productDetails;
+    }
+
+    public ProductOverviewListDto getRelatedProductsByCategory(Long categoryId) {
+        return getProductOverviewListByFilters(null, List.of(categoryId), null, null, 0, 4);
     }
 }
