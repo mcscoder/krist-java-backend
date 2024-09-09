@@ -50,10 +50,9 @@ public class ProductController {
                 productService.getProducts().stream().map(product -> product.toDto()).toList());
     }
 
-    @GetMapping("/best-sellers")
-    public ResponseEntity<List<ProductDto>> getBestSellers() {
-        return ResponseEntity.ok().body(
-                productService.getBestSellers().stream().map(product -> product.toDto()).toList());
+    @GetMapping("/products/best-sellers")
+    public ResponseEntity<ProductOverviewListDto> getBestSellers() {
+        return ResponseEntity.ok().body(productService.getBestSellers());
     }
 
     @GetMapping("/products/category-group/{groupCategoryId}")

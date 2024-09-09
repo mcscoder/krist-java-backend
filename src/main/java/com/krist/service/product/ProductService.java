@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.krist.dto.product.AttributeWithAttributeValuesDto;
@@ -88,9 +86,8 @@ public class ProductService {
         return productRepository.findAll();
     }
 
-    public List<Product> getBestSellers() {
-        Pageable pageable = PageRequest.of(0, 8);
-        return productRepository.findByOrderBySoldDesc(pageable);
+    public ProductOverviewListDto getBestSellers() {
+        return getProductOverviewListByFilters(null, null, null, null, 0, 8);
     }
 
     public ProductOverviewListDto getProductOverviewListByFilters(Long categoryGroupId,
@@ -167,7 +164,7 @@ public class ProductService {
         } else if ("latest".equalsIgnoreCase(sortDirection)) {
             // 3. Sorting by newest (assuming p.id or p.createdAt determines the newest)
             orderList.add(cb.desc(product.get("id"))); // it can be "createdAt" if available
-        } else if ("outstanding".equalsIgnoreCase(sortDirection)) {
+        } else {
             // Default case set by controller
             // 4. Sorting by outstanding (by sold)
             orderList.add(cb.desc(product.get("sold")));
