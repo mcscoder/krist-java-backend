@@ -16,7 +16,7 @@ import com.krist.dto.product.ProductDetailsDto;
 import com.krist.dto.product.ProductDto;
 import com.krist.dto.product.ProductOverviewListDto;
 import com.krist.service.product.ProductService;
-import com.krist.util.StringParser;
+import com.krist.util.string.StringParser;
 
 @RestController
 @RequestMapping("/public")

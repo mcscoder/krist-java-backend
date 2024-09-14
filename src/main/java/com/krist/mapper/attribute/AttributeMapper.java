@@ -5,10 +5,10 @@ import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 
-import com.krist.dto.product.AttributeDto;
-import com.krist.dto.product.AttributeValueDto;
-import com.krist.dto.product.AttributeWithAttributeValuesDto;
-import com.krist.entity.product.Attribute;
+import com.krist.dto.attribute.AttributeDto;
+import com.krist.dto.attribute.AttributeValueDto;
+import com.krist.dto.attribute.AttributeWithAttributeValuesDto;
+import com.krist.entity.attribute.Attribute;
 
 @Mapper
 public interface AttributeMapper {

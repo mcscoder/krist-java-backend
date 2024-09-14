@@ -12,7 +12,7 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import com.krist.filter.JwtAuthenticationFilter;
+import com.krist.filter.authentication.jwt.JwtAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity

@@ -9,22 +9,23 @@ import java.util.logging.Logger;
 
 import org.springframework.stereotype.Service;
 
-import com.krist.dto.product.AttributeWithAttributeValuesDto;
+import com.krist.dto.attribute.AttributeWithAttributeValuesDto;
 import com.krist.dto.product.PostProductRequestDto;
 import com.krist.dto.product.ProductDetailsDto;
 import com.krist.dto.product.ProductDto;
 import com.krist.dto.product.ProductOverviewDto;
 import com.krist.dto.product.ProductOverviewListDto;
+import com.krist.entity.attribute.Attribute;
+import com.krist.entity.attribute.AttributeValue;
+import com.krist.entity.category.Category;
+import com.krist.entity.category.CategoryGroup;
 import com.krist.entity.common.Image;
-import com.krist.entity.product.Attribute;
-import com.krist.entity.product.AttributeValue;
-import com.krist.entity.product.Category;
-import com.krist.entity.product.CategoryGroup;
 import com.krist.entity.product.Product;
 import com.krist.entity.product.ProductVariant;
 import com.krist.exception.custom.NotFoundException;
 import com.krist.mapper.product.ProductMapper;
 import com.krist.repository.product.ProductRepository;
+import com.krist.service.attribute.AttributeService;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;

@@ -3,8 +3,8 @@ package com.krist.mapper.attribute;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 
-import com.krist.dto.product.AttributeValueDto;
-import com.krist.entity.product.AttributeValue;
+import com.krist.dto.attribute.AttributeValueDto;
+import com.krist.entity.attribute.AttributeValue;
 
 @Mapper
 public interface AttributeValueMapper {

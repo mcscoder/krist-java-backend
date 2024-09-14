@@ -5,9 +5,9 @@ import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 
-import com.krist.dto.product.AttributeWithAttributeValuesDto;
-import com.krist.dto.product.CategoryDto;
-import com.krist.dto.product.CategoryGroupDto;
+import com.krist.dto.attribute.AttributeWithAttributeValuesDto;
+import com.krist.dto.category.CategoryDto;
+import com.krist.dto.category.CategoryGroupDto;
 import com.krist.dto.product.ProductDetailsDto;
 import com.krist.dto.product.ProductDto;
 import com.krist.entity.product.Product;

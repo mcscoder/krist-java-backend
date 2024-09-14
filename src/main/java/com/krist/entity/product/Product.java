@@ -3,6 +3,7 @@ package com.krist.entity.product;
 import java.util.List;
 import java.util.Set;
 
+import com.krist.entity.category.Category;
 import com.krist.entity.common.BaseEntity;
 import com.krist.entity.common.Image;
 

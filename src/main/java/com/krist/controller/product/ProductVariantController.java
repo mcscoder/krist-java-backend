@@ -14,7 +14,7 @@ import com.krist.dto.product.PostProductVariantRequestDto;
 import com.krist.dto.product.ProductVariantDto;
 import com.krist.mapper.product.ProductVariantMapper;
 import com.krist.service.product.ProductVariantService;
-import com.krist.util.StringParser;
+import com.krist.util.string.StringParser;
 
 @RestController
 @RequestMapping("/public")

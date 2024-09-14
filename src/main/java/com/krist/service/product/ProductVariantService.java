@@ -9,8 +9,8 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 
 import com.krist.dto.product.PostProductVariantRequestDto;
-import com.krist.entity.product.Attribute;
-import com.krist.entity.product.AttributeValue;
+import com.krist.entity.attribute.Attribute;
+import com.krist.entity.attribute.AttributeValue;
 import com.krist.entity.product.Product;
 import com.krist.entity.product.ProductVariant;
 import com.krist.exception.custom.NotFoundException;

@@ -4,8 +4,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
-import com.krist.dto.product.CategoryGroupDto;
-import com.krist.entity.product.CategoryGroup;
+import com.krist.dto.category.CategoryGroupDto;
+import com.krist.entity.category.CategoryGroup;
 
 @Mapper
 public interface CategoryGroupMapper {
