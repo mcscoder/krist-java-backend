@@ -5,14 +5,16 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.krist.dto.product.CategoryDto;
 import com.krist.dto.product.PostCategoryRequestDto;
 import com.krist.entity.product.Category;
 import com.krist.entity.product.CategoryGroup;
 import com.krist.exception.custom.NotFoundException;
+import com.krist.mapper.category.CategoryMapper;
 import com.krist.repository.product.CategoryRepository;
 
 @Service
-public class CategoryService {
+public class CategoryService implements CategoryMapper {
     private final CategoryRepository categoryRepository;
 
     public CategoryService(CategoryRepository categoryRepository) {
@@ -47,5 +49,9 @@ public class CategoryService {
 
     public List<Category> getCategoriesByCategoryGroup(Long categoryGroupId) {
         return categoryRepository.findCategoriesByCategoryGroupId(categoryGroupId);
+    }
+
+    public CategoryDto toCategoryDto(Category category) {
+        return INSTANCE.toCategoryDto(category);
     }
 }

@@ -13,6 +13,8 @@ import com.krist.entity.product.Attribute;
 import com.krist.entity.product.AttributeValue;
 import com.krist.entity.product.CategoryGroup;
 import com.krist.exception.custom.NotFoundException;
+import com.krist.mapper.attribute.AttributeMapper;
+import com.krist.mapper.attribute.AttributeValueMapper;
 import com.krist.repository.product.AttributeRepository;
 
 @Service
@@ -49,21 +51,11 @@ public class AttributeService {
         return attributeRepository.findAll();
     }
 
-    private AttributeWithAttributeValuesDto parseAttributeToAttributeWithAttributeValues(
-            Attribute attribute) {
-        return new AttributeWithAttributeValuesDto(
-                new AttributeDto(attribute.getId(), attribute.getName()),
-                attribute.getAttributeValues().stream().map((attributeValue) -> {
-                    return new AttributeValueDto(attributeValue.getId(), attributeValue.getName());
-                }).toList());
-    }
-
     public List<AttributeWithAttributeValuesDto> getAttributesWithAttributeValuesByCategoryGroup(
             Long categoryGroupId) {
-        return attributeRepository.findAttributesByCategoryGroupId(categoryGroupId).stream()
-                .map(attributeResult -> {
-                    return parseAttributeToAttributeWithAttributeValues(attributeResult);
-                }).toList();
+        return attributeRepository.findAttributesByCategoryGroupId(categoryGroupId).stream().map(
+                attribute -> AttributeMapper.INSTANCE.toAttributeWithAttributeValuesDto(attribute))
+                .toList();
     }
 
     public List<AttributeWithAttributeValuesDto> getAttributesWithAttributeValuesByProduct(
@@ -75,6 +67,8 @@ public class AttributeService {
 
         attributeValues.forEach((attributeValue) -> {
             Integer itemIndex = -1;
+            // Loop to check if Attribute is already exists in attributeWithAttributeValues
+            // If it exists the itemIndex would be not be -1
             for (Integer i = 0; i < attributeWithAttributeValues.size(); i++) {
                 if (attributeWithAttributeValues.get(i).getAttribute().id()
                         .equals(attributeValue.getAttribute().getId())) {
@@ -84,14 +78,23 @@ public class AttributeService {
             }
 
             if (itemIndex != -1) {
-                attributeWithAttributeValues.get(itemIndex).getAttributeValues().add(
-                        new AttributeValueDto(attributeValue.getId(), attributeValue.getName()));
+                // The attribute does exists then just need to add a new AttributeValueDto to the
+                // attribute its belong to at itemIndex
+                AttributeValueDto attributeValueDto =
+                        AttributeValueMapper.INSTANCE.toAttributeValueDto(attributeValue);
+
+                attributeWithAttributeValues.get(itemIndex).getAttributeValues()
+                        .add(attributeValueDto);
             } else {
-                attributeWithAttributeValues.add(new AttributeWithAttributeValuesDto(
-                        new AttributeDto(attributeValue.getAttribute().getId(),
-                                attributeValue.getAttribute().getName()),
-                        new ArrayList<>(List.of(new AttributeValueDto(attributeValue.getId(),
-                                attributeValue.getName())))));
+                // The attribute does not exists then add a new AttributeWithAttributeValuesDto
+                AttributeDto attributeDto =
+                        AttributeMapper.INSTANCE.toAttributeDto(attributeValue.getAttribute());
+                List<AttributeValueDto> attributeValueDtos = new ArrayList<>(
+                        List.of(AttributeValueMapper.INSTANCE.toAttributeValueDto(attributeValue)));
+                AttributeWithAttributeValuesDto attributeWithAttributeValuesDto =
+                        new AttributeWithAttributeValuesDto(attributeDto, attributeValueDtos);
+
+                attributeWithAttributeValues.add(attributeWithAttributeValuesDto);
             }
         });
 

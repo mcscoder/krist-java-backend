@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.krist.dto.product.AttributeValueDto;
 import com.krist.dto.product.PostAttributeValueRequestDto;
+import com.krist.mapper.attribute.AttributeValueMapper;
 import com.krist.service.product.AttributeValueService;
 
 @RestController
@@ -26,24 +27,32 @@ public class AttributeValueController {
     @PostMapping("/attribute-value")
     public ResponseEntity<AttributeValueDto> postAttributeValue(
             @RequestBody PostAttributeValueRequestDto dto) {
-        return ResponseEntity.ok().body(attributeValueService.postAttributeValue(dto).toDto());
+        return ResponseEntity.ok().body(AttributeValueMapper.INSTANCE
+                .toAttributeValueDto((attributeValueService.postAttributeValue(dto))));
     }
 
     @PostMapping("/attribute-values")
     public ResponseEntity<List<AttributeValueDto>> postAttributeValues(
             @RequestBody List<PostAttributeValueRequestDto> dtos) {
-        return ResponseEntity.ok().body(attributeValueService.postAttributeValues(dtos).stream()
-                .map((attributeValue -> attributeValue.toDto())).toList());
+        return ResponseEntity.ok()
+                .body(attributeValueService.postAttributeValues(dtos).stream()
+                        .map((attributeValue -> AttributeValueMapper.INSTANCE
+                                .toAttributeValueDto(attributeValue)))
+                        .toList());
     }
 
     @GetMapping("/attribute-value/{id}")
     public ResponseEntity<AttributeValueDto> getAttributeValue(@PathVariable Long id) {
-        return ResponseEntity.ok().body(attributeValueService.getAttributeValue(id).toDto());
+        return ResponseEntity.ok().body(AttributeValueMapper.INSTANCE
+                .toAttributeValueDto(attributeValueService.getAttributeValue(id)));
     }
 
     @GetMapping("/attribute-values")
     public ResponseEntity<List<AttributeValueDto>> getAttributeValues() {
-        return ResponseEntity.ok().body(attributeValueService.getAttributeValues().stream()
-                .map((attributeValue -> attributeValue.toDto())).toList());
+        return ResponseEntity.ok()
+                .body(attributeValueService.getAttributeValues().stream()
+                        .map((attributeValue -> AttributeValueMapper.INSTANCE
+                                .toAttributeValueDto(attributeValue)))
+                        .toList());
     }
 }

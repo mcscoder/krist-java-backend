@@ -5,14 +5,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import org.springframework.stereotype.Service;
 
 import com.krist.dto.product.AttributeWithAttributeValuesDto;
-import com.krist.dto.product.CategoryDto;
-import com.krist.dto.product.CategoryGroupDto;
 import com.krist.dto.product.PostProductRequestDto;
 import com.krist.dto.product.ProductDetailsDto;
+import com.krist.dto.product.ProductDto;
 import com.krist.dto.product.ProductOverviewDto;
 import com.krist.dto.product.ProductOverviewListDto;
 import com.krist.entity.common.Image;
@@ -23,6 +23,7 @@ import com.krist.entity.product.CategoryGroup;
 import com.krist.entity.product.Product;
 import com.krist.entity.product.ProductVariant;
 import com.krist.exception.custom.NotFoundException;
+import com.krist.mapper.product.ProductMapper;
 import com.krist.repository.product.ProductRepository;
 
 import jakarta.persistence.EntityManager;
@@ -37,7 +38,7 @@ import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
 
 @Service
-public class ProductService {
+public class ProductService implements ProductMapper {
     private final ProductRepository productRepository;
     private final EntityManager entityManager;
     private final AttributeService attributeService;
@@ -51,18 +52,14 @@ public class ProductService {
 
     public Product postProduct(PostProductRequestDto dto) {
         Set<Image> images = new HashSet<>();
-        Set<Category> categories = new HashSet<>();
+        Category category = new Category(dto.categoryId());
 
         for (Long imageId : dto.imageIds()) {
             images.add(new Image(imageId));
         }
 
-        for (Long categoryId : dto.categoryIds()) {
-            categories.add(new Category(categoryId));
-        }
-
-        Product product = new Product(dto.name(), dto.title(), dto.description(), 0, images,
-                categories, null);
+        Product product =
+                new Product(dto.name(), dto.title(), dto.description(), 0, images, category);
 
         return productRepository.save(product);
     }
@@ -99,8 +96,8 @@ public class ProductService {
         CriteriaQuery<ProductOverviewDto> query = cb.createQuery(ProductOverviewDto.class);
         Root<Product> product = query.from(Product.class);
 
-        // 1. Join with categories
-        Join<Product, Category> categoryJoin = product.join("categories", JoinType.LEFT);
+        // 1. Join with category
+        Join<Product, Category> categoryJoin = product.join("category", JoinType.LEFT);
         // 2. Join with categoryGroup
         Join<Category, CategoryGroup> categoryGroupJoin =
                 categoryJoin.join("categoryGroup", JoinType.LEFT);
@@ -117,7 +114,9 @@ public class ProductService {
 
         // 2. Filter by Categories
         if (categoryIds != null && !categoryIds.isEmpty()) {
-            predicates.add(categoryJoin.get("id").in(categoryIds));
+            predicates.add(cb.equal(categoryJoin.get("id"), categoryIds.get(0)));
+            Logger.getGlobal().info(categoryIds.get(0).toString());
+            // predicates.add(categoryJoin.get("id").in(categoryIds));
         }
 
         // 3. Filter by Attributes and their corresponding values
@@ -193,20 +192,20 @@ public class ProductService {
 
     public ProductDetailsDto getProductDetailsByProductId(Long productId) {
         Product product = getProduct(productId);
-
-        CategoryDto categoryDto = product.getCategories().toArray(new Category[0])[0].toDto();
-        CategoryGroupDto categoryGroupDto =
-                product.getCategories().toArray(new Category[0])[0].getCategoryGroup().toDto();
         List<AttributeWithAttributeValuesDto> attributes =
                 attributeService.getAttributesWithAttributeValuesByProduct(productId);
-
         ProductDetailsDto productDetails =
-                new ProductDetailsDto(product.toDto(), categoryGroupDto, categoryDto, attributes);
+                ProductMapper.INSTANCE.toProductDetailsDto(product, attributes);
 
         return productDetails;
     }
 
     public ProductOverviewListDto getRelatedProductsByCategory(Long categoryId) {
         return getProductOverviewListByFilters(null, List.of(categoryId), null, null, 0, 4);
+    }
+
+    @Override
+    public ProductDto toProductDto(Product product) {
+        return INSTANCE.toProductDto(product);
     }
 }

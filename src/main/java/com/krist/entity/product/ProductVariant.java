@@ -2,7 +2,6 @@ package com.krist.entity.product;
 
 import java.util.Set;
 
-import com.krist.dto.product.ProductVariantDto;
 import com.krist.entity.common.BaseEntity;
 
 import jakarta.persistence.Column;
@@ -53,10 +52,5 @@ public class ProductVariant extends BaseEntity {
         this.quantity = quantity;
         this.product = product;
         this.attributeValues = attributeValues;
-    }
-
-    @Override
-    public ProductVariantDto toDto() {
-        return new ProductVariantDto(id, price, quantity);
     }
 }

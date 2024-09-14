@@ -1,6 +1,5 @@
 package com.krist.entity.product;
 
-import com.krist.dto.product.CategoryDto;
 import com.krist.entity.common.BaseEntity;
 
 import jakarta.persistence.Column;
@@ -40,10 +39,5 @@ public class Category extends BaseEntity {
     public Category(String name, CategoryGroup categoryGroup) {
         this.name = name;
         this.categoryGroup = categoryGroup;
-    }
-
-    @Override
-    public CategoryDto toDto() {
-        return new CategoryDto(id, name);
     }
 }

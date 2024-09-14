@@ -29,25 +29,26 @@ public class ProductController {
 
     @PostMapping("/product")
     public ResponseEntity<ProductDto> postProduct(@RequestBody PostProductRequestDto dto) {
-        return ResponseEntity.ok().body(productService.postProduct(dto).toDto());
+        return ResponseEntity.ok()
+                .body(productService.toProductDto(productService.postProduct(dto)));
     }
 
     @PostMapping("/products")
     public ResponseEntity<List<ProductDto>> postProducts(
             @RequestBody List<PostProductRequestDto> dtos) {
         return ResponseEntity.ok().body(productService.postProducts(dtos).stream()
-                .map(product -> product.toDto()).toList());
+                .map(product -> productService.toProductDto(product)).toList());
     }
 
     @GetMapping("/product/{id}")
     public ResponseEntity<ProductDto> getProduct(@PathVariable Long id) {
-        return ResponseEntity.ok().body(productService.getProduct(id).toDto());
+        return ResponseEntity.ok().body(productService.toProductDto(productService.getProduct(id)));
     }
 
     @GetMapping("/products")
     public ResponseEntity<List<ProductDto>> getProducts() {
-        return ResponseEntity.ok().body(
-                productService.getProducts().stream().map(product -> product.toDto()).toList());
+        return ResponseEntity.ok().body(productService.getProducts().stream()
+                .map(product -> productService.toProductDto(product)).toList());
     }
 
     @GetMapping("/products/best-sellers")

@@ -2,7 +2,6 @@ package com.krist.entity.product;
 
 import java.util.Set;
 
-import com.krist.dto.product.AttributeValueDto;
 import com.krist.entity.common.BaseEntity;
 
 import jakarta.persistence.Column;
@@ -48,10 +47,5 @@ public class AttributeValue extends BaseEntity {
     public AttributeValue(String name, Attribute attribute) {
         this.name = name;
         this.attribute = attribute;
-    }
-
-    @Override
-    public AttributeValueDto toDto() {
-        return new AttributeValueDto(id, name);
     }
 }

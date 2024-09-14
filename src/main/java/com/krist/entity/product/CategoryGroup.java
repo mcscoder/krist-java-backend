@@ -2,7 +2,6 @@ package com.krist.entity.product;
 
 import java.util.List;
 
-import com.krist.dto.product.CategoryGroupDto;
 import com.krist.entity.common.BaseEntity;
 import com.krist.entity.common.Image;
 
@@ -53,10 +52,5 @@ public class CategoryGroup extends BaseEntity {
     public CategoryGroup(String name, Image image) {
         this.name = name;
         this.image = image;
-    }
-
-    @Override
-    public CategoryGroupDto toDto() {
-        return new CategoryGroupDto(id, name, image.getSrc());
     }
 }

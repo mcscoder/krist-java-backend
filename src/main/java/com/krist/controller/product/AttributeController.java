@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.krist.dto.product.AttributeDto;
 import com.krist.dto.product.AttributeWithAttributeValuesDto;
 import com.krist.dto.product.PostAttributeRequestDto;
+import com.krist.mapper.attribute.AttributeMapper;
 import com.krist.service.product.AttributeService;
 
 @RestController
@@ -26,25 +27,27 @@ public class AttributeController {
 
     @PostMapping("/attribute")
     public ResponseEntity<AttributeDto> postAttribute(@RequestBody PostAttributeRequestDto dto) {
-        return ResponseEntity.ok().body(attributeService.postAttribute(dto).toDto());
+        return ResponseEntity.ok()
+                .body(AttributeMapper.INSTANCE.toAttributeDto(attributeService.postAttribute(dto)));
     }
 
     @PostMapping("/attributes")
     public ResponseEntity<List<AttributeDto>> postAttributes(
             @RequestBody List<PostAttributeRequestDto> dtos) {
         return ResponseEntity.ok().body(attributeService.postAttributes(dtos).stream()
-                .map(attribute -> attribute.toDto()).toList());
+                .map(attribute -> AttributeMapper.INSTANCE.toAttributeDto(attribute)).toList());
     }
 
     @GetMapping("/attribute/{id}")
     public ResponseEntity<AttributeDto> getAttribute(@PathVariable Long id) {
-        return ResponseEntity.ok().body(attributeService.getAttribute(id).toDto());
+        return ResponseEntity.ok()
+                .body(AttributeMapper.INSTANCE.toAttributeDto(attributeService.getAttribute(id)));
     }
 
     @GetMapping("/attributes")
     public ResponseEntity<List<AttributeDto>> getAttributes() {
         return ResponseEntity.ok().body(attributeService.getAttributes().stream()
-                .map(attribute -> attribute.toDto()).toList());
+                .map(attribute -> AttributeMapper.INSTANCE.toAttributeDto(attribute)).toList());
     }
 
     @GetMapping("/attributes/attribute-values/category-group/{categoryGroupId}")

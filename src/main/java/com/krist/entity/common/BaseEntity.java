@@ -24,8 +24,4 @@ public abstract class BaseEntity {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
-
-    public Object toDto() {
-        return null;
-    };
 }

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.krist.dto.product.PostProductVariantRequestDto;
 import com.krist.dto.product.ProductVariantDto;
+import com.krist.mapper.product.ProductVariantMapper;
 import com.krist.service.product.ProductVariantService;
 import com.krist.util.StringParser;
 
@@ -27,35 +28,39 @@ public class ProductVariantController {
     @PostMapping("/product-variant")
     public ResponseEntity<ProductVariantDto> postProductVariant(
             @RequestBody PostProductVariantRequestDto dto) {
-        return ResponseEntity.ok().body(productVariantService.postProductVariant(dto).toDto());
+        return ResponseEntity.ok().body(ProductVariantMapper.INSTANCE
+                .toProductVariantDto(productVariantService.postProductVariant(dto)));
     }
 
     @PostMapping("/product-variants")
     public ResponseEntity<List<ProductVariantDto>> postProductVariants(
             @RequestBody List<PostProductVariantRequestDto> dtos) {
-        return ResponseEntity.ok().body(productVariantService.postProductVariants(dtos).stream()
-                .map(productVariant -> productVariant.toDto()).toList());
+        return ResponseEntity.ok()
+                .body(productVariantService.postProductVariants(dtos).stream()
+                        .map(productVariant -> ProductVariantMapper.INSTANCE
+                                .toProductVariantDto(productVariant))
+                        .toList());
     }
 
     @GetMapping("/product-variant/{id}")
     public ResponseEntity<ProductVariantDto> getProductVariant(@PathVariable Long id) {
-        return ResponseEntity.ok().body(productVariantService.getProductVariant(id).toDto());
+        return ResponseEntity.ok().body(ProductVariantMapper.INSTANCE
+                .toProductVariantDto(productVariantService.getProductVariant(id)));
     }
 
     @GetMapping("/product-variants")
     public ResponseEntity<List<ProductVariantDto>> getProductVariants() {
-        return ResponseEntity.ok().body(productVariantService.getProductVariants().stream()
-                .map(productVariant -> productVariant.toDto()).toList());
+        return ResponseEntity.ok().body(productVariantService.getProductVariants().stream().map(
+                productVariant -> ProductVariantMapper.INSTANCE.toProductVariantDto(productVariant))
+                .toList());
     }
 
     @GetMapping("/product-variant/attributes/{productId}/{attributes}")
     public ResponseEntity<ProductVariantDto> getProductVariantByAttributes(
             @PathVariable Long productId, @PathVariable String attributes) {
-        return ResponseEntity
-                .ok().body(
-                        productVariantService
-                                .getProductVariantByAttributes(productId,
-                                        StringParser.parseAttributesWithSingleValue(attributes))
-                                .toDto());
+        return ResponseEntity.ok()
+                .body(ProductVariantMapper.INSTANCE.toProductVariantDto(
+                        productVariantService.getProductVariantByAttributes(productId,
+                                StringParser.parseAttributesWithSingleValue(attributes))));
     }
 }
