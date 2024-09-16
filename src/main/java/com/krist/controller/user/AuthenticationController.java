@@ -16,7 +16,6 @@ import com.krist.dto.user.PasswordDto;
 import com.krist.dto.user.RegisterDto;
 import com.krist.service.authentication.AuthenticationService;
 
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
@@ -38,11 +37,7 @@ public class AuthenticationController {
     @PostMapping("/login")
     public ResponseEntity<MessageDto> login(@RequestBody LoginDto loginDto,
             HttpServletResponse response) throws AuthenticationException {
-        TokenDto tokenDto = authenticationService.login(loginDto);
-        Cookie cookie = new Cookie("jwt", tokenDto.token());
-
-        cookie.setPath("/");
-        response.addCookie(cookie);
+        authenticationService.login(loginDto, response);
 
         return ResponseEntity.ok().body(new MessageDto("Log in success"));
     }
@@ -68,5 +63,12 @@ public class AuthenticationController {
         authenticationService.resetPassword(token, passwordDto.password());
 
         return ResponseEntity.ok().body(new MessageDto("Password has been changed"));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<MessageDto> logout(HttpServletResponse response) {
+        authenticationService.logout(response);
+
+        return ResponseEntity.ok().body(new MessageDto("Logout success"));
     }
 }

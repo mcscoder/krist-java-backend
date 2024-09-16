@@ -4,6 +4,7 @@ import java.util.Date;
 
 import org.springframework.stereotype.Service;
 
+import com.krist.dto.common.TokenDto;
 import com.krist.util.jwt.JwtUtil;
 
 import io.jsonwebtoken.Claims;
@@ -23,9 +24,8 @@ public class JwtService {
      * @param userId the ID of the user for whom the access token is generated
      * @return the generated access token as a string
      */
-    public String generateAccessToken(Long userId) {
-        String jwt = jwtUtil.createAccessToken(null, userId.toString());
-        return jwt;
+    public TokenDto generateAccessToken(Long userId) {
+        return jwtUtil.createAccessToken(null, userId.toString());
     }
 
     /**

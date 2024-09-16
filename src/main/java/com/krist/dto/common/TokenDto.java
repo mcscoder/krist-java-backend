@@ -1,4 +1,4 @@
 package com.krist.dto.common;
 
-public record TokenDto(String token) {
+public record TokenDto(String token, Integer expiration) {
 }

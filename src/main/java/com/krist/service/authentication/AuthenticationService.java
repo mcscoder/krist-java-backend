@@ -16,6 +16,9 @@ import com.krist.exception.custom.ConflictException;
 import com.krist.exception.custom.NotFoundException;
 import com.krist.service.user.UserService;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
+
 @Service
 public class AuthenticationService {
     final private UserService userService;
@@ -46,14 +49,31 @@ public class AuthenticationService {
         userService.userRepository.save(newUser);
     }
 
-    public TokenDto login(LoginDto loginDto) {
+    public void login(LoginDto loginDto, HttpServletResponse response) {
         User user = userService.findByEmail(loginDto.email());
+
         if (!passwordEncoder.matches(loginDto.password(), user.getPassword())) {
             throw new BadRequestException("Invalid password");
         }
 
-        String jwt = jwtService.generateAccessToken(user.getId());
-        return new TokenDto(jwt);
+        TokenDto tokenDto = jwtService.generateAccessToken(user.getId());
+
+        Cookie cookie = new Cookie("jwt", tokenDto.token());
+        cookie.setPath("/");
+        cookie.setMaxAge(tokenDto.expiration());
+        cookie.setHttpOnly(true);
+
+        response.addCookie(cookie);
+    }
+
+    public void logout(HttpServletResponse response) {
+        Cookie cookie = new Cookie("jwt", null);
+
+        cookie.setPath("/");
+        cookie.setHttpOnly(true);
+        cookie.setMaxAge(0);
+
+        response.addCookie(cookie);
     }
 
     public void forgotPassword(String email) {
@@ -85,7 +105,8 @@ public class AuthenticationService {
 
         passwordResetOtpService.validateOtp(user, otp);
 
-        return new TokenDto(passwordResetOtpService.generatePasswordResetToken(user.getId(), otp));
+        return new TokenDto(passwordResetOtpService.generatePasswordResetToken(user.getId(), otp),
+                null);
     }
 
     public void resetPassword(String token, String password) {

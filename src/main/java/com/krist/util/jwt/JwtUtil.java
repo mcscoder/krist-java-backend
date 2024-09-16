@@ -8,6 +8,8 @@ import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.krist.dto.common.TokenDto;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
@@ -29,7 +31,7 @@ public class JwtUtil {
         return key;
     }
 
-    public String createAccessToken(Map<String, Object> extraClaims, String subject) {
+    public TokenDto createAccessToken(Map<String, Object> extraClaims, String subject) {
         // Official Docs Reference:
         // https://github.com/jwtk/jjwt?tab=readme-ov-file#creating-a-jws
         // Example:
@@ -38,7 +40,9 @@ public class JwtUtil {
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSignInKey(), Jwts.SIG.HS256).compact();
-        return jwt;
+
+        TokenDto tokenDto = new TokenDto(jwt, expiration);
+        return tokenDto;
     }
 
     public Claims parseToken(String token) {
